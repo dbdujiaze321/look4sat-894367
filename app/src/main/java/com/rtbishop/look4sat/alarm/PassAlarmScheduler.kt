@@ -56,8 +56,6 @@ object PassAlarmScheduler {
     const val EXTRA_AOS = "pass_aos"
     const val EXTRA_MAX_ELEVATION = "pass_max_elevation"
 
-    private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-
     fun ensureChannel(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
@@ -111,6 +109,10 @@ object PassAlarmScheduler {
         return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, flags)
     }
 
+    /** Built per call: the locale can change while the app is alive. */
+    private fun formatAos(aosTime: Long): String =
+        SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(aosTime))
+
     /**
      * Posts the reminder. Takes the fields rather than an [OrbitalPass] because the pass may have
      * left the list between scheduling and firing, while the extras are still valid.
@@ -136,7 +138,7 @@ object PassAlarmScheduler {
         val text = context.getString(
             R.string.pass_alarm_text,
             maxElevation.roundToInt().toString(),
-            timeFormat.format(Date(aosTime))
+            formatAos(aosTime)
         )
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder(context, CHANNEL_ID)

@@ -18,6 +18,7 @@
 package com.rtbishop.look4sat.convention
 
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.CommonExtension
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.api.Project
@@ -62,6 +63,7 @@ internal fun Project.setupAndroidApp() {
             versionCode = libs.versions.appVersionCode.get().toInt()
             versionName = libs.versions.appVersionName.get()
         }
+        val releaseSigning = readReleaseSigning(this)
         buildTypes {
             debug {
                 applicationIdSuffix = ".debug"
@@ -69,7 +71,12 @@ internal fun Project.setupAndroidApp() {
             release {
                 isMinifyEnabled = true
                 isShrinkResources = true
-                proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )
+                // Absent on a clean checkout: the build still produces an unsigned APK.
+                releaseSigning?.let { signingConfig = it }
             }
         }
         androidResources {
@@ -107,5 +114,24 @@ internal fun Project.setupKotlin() {
     kotlinExtension.jvmToolchain(libs.versions.jdkVersion.get().toInt())
     dependencies {
         testImplementation(libs.bundles.unitTest)
+    }
+}
+
+/**
+ * Reads `keystore.properties` from the app module. The file is intentionally not in version
+ * control: it holds the release key password, and a build without it must still succeed so that a
+ * fresh clone can produce an unsigned release APK.
+ */
+private fun Project.readReleaseSigning(extension: ApplicationExtension): ApkSigningConfig? {
+    // Lives at the repository root, not in the app module: it is local build material.
+    val propsFile = rootProject.file("keystore.properties")
+    if (!propsFile.exists()) return null
+    val props = java.util.Properties().apply { propsFile.inputStream().use { load(it) } }
+    val storePath = props.getProperty("storeFile") ?: return null
+    return extension.signingConfigs.create("release") {
+        storeFile = file(storePath)
+        storePassword = props.getProperty("storePassword")
+        keyAlias = props.getProperty("keyAlias")
+        keyPassword = props.getProperty("keyPassword")
     }
 }

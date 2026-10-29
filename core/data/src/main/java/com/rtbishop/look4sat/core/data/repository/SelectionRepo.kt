@@ -18,6 +18,7 @@
 package com.rtbishop.look4sat.core.data.repository
 
 import com.rtbishop.look4sat.core.domain.model.SatItem
+import com.rtbishop.look4sat.core.domain.model.SatelliteAliases
 import com.rtbishop.look4sat.core.domain.repository.ISelectionRepo
 import com.rtbishop.look4sat.core.domain.repository.ISettingsRepo
 import com.rtbishop.look4sat.core.domain.source.ILocalSource
@@ -131,8 +132,11 @@ class SelectionRepo(
             .filter { it.isNotEmpty() }
         if (tokens.isEmpty()) return items
         return items.filter { item ->
-            val normalizedName = normalizeForSearch(item.name)
-            tokens.all { normalizedName.contains(it) }
+            // Native names are appended so "天宫" and "北斗" find the Latin-named catalogue rows.
+            val searchable = normalizeForSearch(
+                item.name + " " + SatelliteAliases.chineseAliases(item.name)
+            )
+            tokens.all { searchable.contains(it) }
         }
     }
 
