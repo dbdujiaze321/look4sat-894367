@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Monochrome layer for themed icons (Android 13+).
+
+  A planet inside an orbit with one satellite riding the ring. Everything stays inside the 66 dp
+  safe circle (x/y 21..87 of the 108 dp canvas) so no launcher mask can clip it. A silhouette of
+  the mascot was tried first and turned into an unreadable blob at 24 dp, which is the failure mode
+  the platform guidance warns about; the coloured layers still carry the artwork.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- planet -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M54,58m-14,0a14,14 0 1,1 28,0a14,14 0 1,1 -28,0" />
+
+    <!-- orbit ring -->
+    <group
+        android:pivotX="54"
+        android:pivotY="58"
+        android:rotation="-20">
+        <path
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="5"
+            android:pathData="M22,58a32,13 0 1,0 64,0a32,13 0 1,0 -64,0" />
+    </group>
+
+    <!-- satellite riding the ring -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M78,44m-5,0a5,5 0 1,1 10,0a5,5 0 1,1 -10,0" />
+</vector>

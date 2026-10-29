@@ -38,7 +38,7 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("ALTER TABLE entries ADD COLUMN ndot REAL NOT NULL DEFAULT 0.0")
         db.execSQL("ALTER TABLE radios ADD COLUMN isCustom INTEGER NOT NULL DEFAULT 0")
     }
-
+}
 
 /**
  * Adds the soft-aging flag. Entries are never deleted because a source feed is missing; they are
@@ -48,4 +48,4 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE entries ADD COLUMN isStale INTEGER NOT NULL DEFAULT 0")
     }
-}}
+}
