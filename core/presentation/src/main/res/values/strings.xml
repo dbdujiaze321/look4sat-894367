@@ -296,4 +296,22 @@
     <!-- Main screen -->
     <string name="tracking_format">Tracking: %s</string>
 
+
+    <string name="nav_workbench">Workbench</string>
+    <string name="workbench_title">Workbench</string>
+    <string name="workbench_next_satellite">NEXT SATELLITE</string>
+    <string name="workbench_best_passes">Best passes in the next 24 h</string>
+    <string name="workbench_no_passes">No passes calculated yet</string>
+    <string name="workbench_pass_window">%1$s - %2$s · max %3$d°</string>
+    <string name="workbench_pass_duration">%1$d min</string>
+    <string name="workbench_open_pass">Open pass</string>
+    <string name="workbench_all_passes">All passes</string>
+    <string name="workbench_data_never">TLE data: never updated</string>
+    <string name="workbench_data_age">TLE data: %1$d days old</string>
+    <string name="workbench_high_precision">High-precision window: %1$s days left</string>
+    <string name="workbench_high_precision_expired">High-precision window expired - predictions are extrapolated</string>
+    <string name="workbench_refresh">Update TLE</string>
+    <string name="workbench_refreshing">Updating</string>
+    <string name="workbench_refresh_failed">Update failed. Cached data is unchanged.</string>
+    <string name="workbench_satellite_count">%1$d satellites</string>
 </resources>

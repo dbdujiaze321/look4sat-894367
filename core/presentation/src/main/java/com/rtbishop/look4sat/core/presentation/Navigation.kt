@@ -29,6 +29,10 @@ sealed class Screen(val iconResId: Int, val titleResId: Int) : NavKey {
     @Serializable
     data object Passes : Screen(R.drawable.ic_passes, R.string.nav_pass)
 
+    /** Landing page: next pass countdown, best passes in 24 h, data freshness. */
+    @Serializable
+    data object Workbench : Screen(R.drawable.ic_workbench, R.string.nav_workbench)
+
     @Serializable
     data object Status : Screen(R.drawable.ic_satellite, R.string.nav_status)
 

@@ -79,6 +79,7 @@ import com.rtbishop.look4sat.core.presentation.hasEnoughHeight
 import com.rtbishop.look4sat.core.presentation.hasEnoughWidth
 import com.rtbishop.look4sat.feature.map.MapDestination
 import com.rtbishop.look4sat.feature.passes.PassesDestination
+import com.rtbishop.look4sat.feature.passes.WorkbenchDestination
 import com.rtbishop.look4sat.feature.radar.RadarDestination
 import com.rtbishop.look4sat.feature.satellites.SatellitesDestination
 import com.rtbishop.look4sat.feature.settings.SettingsDestination
@@ -144,18 +145,25 @@ private fun MainScreen(navigateToRadar: () -> Unit = {}) {
     val container = (context.applicationContext as IContainerProvider).getMainContainer()
     val trackingState by container.radioTrackingService.state.collectAsStateWithLifecycle()
 
-    val backStack = rememberNavBackStack(Screen.Passes)
+    val backStack = rememberNavBackStack(Screen.Workbench)
     val currentKey = backStack.lastOrNull()
     val navigateBack: () -> Unit = { backStack.removeLastOrNull() }
     val fadeTransition = fadeIn(animationSpec = tween(300)) togetherWith
         fadeOut(animationSpec = tween(300))
-    val navItems =
-        listOf(Screen.Satellites, Screen.Passes, Screen.Status, Screen.Map, Screen.Settings)
+    val navItems = listOf(
+        Screen.Workbench,
+        Screen.Satellites,
+        Screen.Passes,
+        Screen.Status,
+        Screen.Map,
+        Screen.Settings
+    )
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             navItems.forEach { screen ->
                 val isSelected = when (currentKey) {
+                    is Screen.Workbench -> screen is Screen.Workbench
                     is Screen.Satellites -> screen is Screen.Satellites
                     is Screen.Passes -> screen is Screen.Passes
                     is Screen.Status -> screen is Screen.Status
@@ -175,7 +183,8 @@ private fun MainScreen(navigateToRadar: () -> Unit = {}) {
                     onClick = {
                         if (isSelected) return@item
                         while (backStack.size > 1) backStack.removeAt(backStack.size - 1)
-                        if (screen !is Screen.Passes) backStack.add(screen)
+                        // The first entry is the landing page: reselecting it must not stack a copy.
+                        if (screen != Screen.Workbench) backStack.add(screen)
                     }
                 )
             }
@@ -202,6 +211,18 @@ private fun MainScreen(navigateToRadar: () -> Unit = {}) {
                     rememberViewModelStoreNavEntryDecorator()
                 ),
                 entryProvider = entryProvider {
+                    entry<Screen.Workbench> {
+                        WorkbenchDestination(
+                            onOpenPasses = {
+                                while (backStack.size > 1) backStack.removeAt(backStack.size - 1)
+                                backStack.add(Screen.Passes)
+                            },
+                            onOpenPassDetail = { catNum, aosTime ->
+                                container.satelliteRepo.selectPass(catNum, aosTime)
+                                navigateToRadar()
+                            }
+                        )
+                    }
                     entry<Screen.Satellites> {
                         SatellitesDestination(navigateUp = navigateBack)
                     }

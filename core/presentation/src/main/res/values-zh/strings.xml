@@ -245,4 +245,22 @@
     <!-- Main screen -->
     <string name="tracking_format">跟踪：%s</string>
 
+
+    <string name="nav_workbench">工作台</string>
+    <string name="workbench_title">工作台</string>
+    <string name="workbench_next_satellite">下一颗卫星</string>
+    <string name="workbench_best_passes">未来 24 小时最佳过境</string>
+    <string name="workbench_no_passes">尚无过境预测</string>
+    <string name="workbench_pass_window">%1$s - %2$s · 最高 %3$d°</string>
+    <string name="workbench_pass_duration">%1$d 分钟</string>
+    <string name="workbench_open_pass">打开过境</string>
+    <string name="workbench_all_passes">全部过境</string>
+    <string name="workbench_data_never">TLE 数据：从未更新</string>
+    <string name="workbench_data_age">TLE 数据：%1$d 天前</string>
+    <string name="workbench_high_precision">高精度窗口：剩余 %1$s 天</string>
+    <string name="workbench_high_precision_expired">高精度窗口已过，预测为外推结果</string>
+    <string name="workbench_refresh">更新 TLE</string>
+    <string name="workbench_refreshing">更新中</string>
+    <string name="workbench_refresh_failed">更新失败，本地数据未受影响。</string>
+    <string name="workbench_satellite_count">%1$d 颗卫星</string>
 </resources>
