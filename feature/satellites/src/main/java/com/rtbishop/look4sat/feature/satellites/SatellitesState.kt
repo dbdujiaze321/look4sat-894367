@@ -25,7 +25,9 @@ data class SatellitesState(
     val shouldSeeWarning: Boolean = false,
     val itemsList: List<SatItem> = emptyList(),
     val currentModes: List<String> = emptyList(),
-    val modesList: List<String> = emptyList()
+    val modesList: List<String> = emptyList(),
+    /** Group the picker by satellite purpose instead of only selected/available. */
+    val isGrouped: Boolean = false
 )
 
 sealed interface SatellitesAction {

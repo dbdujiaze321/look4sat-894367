@@ -56,7 +56,12 @@ class SatellitesViewModel(
         }
         viewModelScope.launch {
             settingsRepo.otherSettings.collectLatest { settings ->
-                _uiState.update { it.copy(shouldSeeWarning = settings.shouldSeeWarning) }
+                _uiState.update {
+                    it.copy(
+                        shouldSeeWarning = settings.shouldSeeWarning,
+                        isGrouped = settings.satellitesGrouped
+                    )
+                }
             }
         }
         viewModelScope.launch {

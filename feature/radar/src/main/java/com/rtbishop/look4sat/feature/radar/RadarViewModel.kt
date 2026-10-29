@@ -23,6 +23,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rtbishop.look4sat.core.domain.model.SatRadio
+import com.rtbishop.look4sat.core.domain.model.SatelliteCategory
 import com.rtbishop.look4sat.core.domain.predict.CelestialComputer
 import com.rtbishop.look4sat.core.domain.predict.OrbitalObject
 import com.rtbishop.look4sat.core.domain.predict.OrbitalPass
@@ -91,6 +92,9 @@ class RadarViewModel(
             orientationValues = sensorsRepo.sensorData.value,
             shouldShowSweep = settingsRepo.otherSettings.value.stateOfSweep,
             shouldUseCompass = settingsRepo.otherSettings.value.stateOfSensors,
+            radarIconStyle = settingsRepo.otherSettings.value.radarIconStyle,
+            radarShowLabels = settingsRepo.otherSettings.value.radarShowLabels,
+            radarIconScale = settingsRepo.otherSettings.value.radarIconScale,
             sstv = SstvSubState(selectedMode = settingsRepo.otherSettings.value.sstvMode)
         )
     )
@@ -136,7 +140,10 @@ class RadarViewModel(
                         isUtc = settings.stateOfUtc,
                         shouldShowSweep = settings.stateOfSweep,
                         shouldUseCompass = settings.stateOfSensors,
-                        shouldFlipRadar = settings.radarCompassOffsetElev < 0f
+                        shouldFlipRadar = settings.radarCompassOffsetElev < 0f,
+                        radarIconStyle = settings.radarIconStyle,
+                        radarShowLabels = settings.radarShowLabels,
+                        radarIconScale = settings.radarIconScale
                     )
                 }
                 // Reactively wire sensor hardware to the compass setting
@@ -187,7 +194,13 @@ class RadarViewModel(
 
     // Loads transmitters and satellite track for pass, sets initial state, returns full radio list
     private suspend fun loadPassData(pass: OrbitalPass): List<SatRadio> {
-        _uiState.update { it.copy(currentPass = pass) }
+        _uiState.update {
+            it.copy(
+                currentPass = pass,
+                satelliteCategory = SatelliteCategory.classify(pass.name),
+                satelliteLabel = pass.catNum.toString()
+            )
+        }
         val allRadios = satelliteRepo.getRadiosWithId(pass.catNum)
         transponders = allRadios.filter { it.downlinkLow != null }
         if (allRadios.isNotEmpty()) {

@@ -27,7 +27,9 @@ import com.rtbishop.look4sat.core.domain.model.DataSourcesSettings
 import com.rtbishop.look4sat.core.domain.model.DatabaseState
 import com.rtbishop.look4sat.core.domain.model.OtherSettings
 import com.rtbishop.look4sat.core.domain.model.PassesSettings
+import com.rtbishop.look4sat.core.domain.model.RadarIconStyle
 import com.rtbishop.look4sat.core.domain.model.RCSettings
+import com.rtbishop.look4sat.core.domain.model.ThemePreset
 import com.rtbishop.look4sat.core.domain.model.RadioControlSettings
 import com.rtbishop.look4sat.core.domain.model.Constants
 import com.rtbishop.look4sat.core.domain.predict.GeoPos
@@ -94,6 +96,11 @@ class SettingsRepo(
     private val keyHighElevation = "highElevation"
     private val keyRadarCompassOffset = "radarCompassOffset"
     private val keyRadarCompassOffsetElev = "radarCompassOffsetElev"
+    private val keyThemePreset = "themePreset"
+    private val keyRadarIconStyle = "radarIconStyle"
+    private val keyRadarShowLabels = "radarShowLabels"
+    private val keyRadarIconScale = "radarIconScale"
+    private val keySatellitesGrouped = "satellitesGrouped"
     private val keySatellitesUrls = "satellitesUrls"
     private val keyTransceiversUrls = "transceiversUrls"
     private val keySatellitesUrlsEnabled = "satellitesUrlsEnabled"
@@ -364,6 +371,11 @@ class SettingsRepo(
                 putLong(keyHighElevation, new.highElevation.toRawBits())
                 putFloat(keyRadarCompassOffset, new.radarCompassOffset)
                 putFloat(keyRadarCompassOffsetElev, new.radarCompassOffsetElev)
+                putString(keyThemePreset, new.themePreset.name)
+                putString(keyRadarIconStyle, new.radarIconStyle.name)
+                putBoolean(keyRadarShowLabels, new.radarShowLabels)
+                putFloat(keyRadarIconScale, new.radarIconScale)
+                putBoolean(keySatellitesGrouped, new.satellitesGrouped)
             }
             new
         }
@@ -382,7 +394,12 @@ class SettingsRepo(
         lowElevation = Double.fromBits(preferences.getLong(keyLowElevation, 15.0.toRawBits())),
         highElevation = Double.fromBits(preferences.getLong(keyHighElevation, 45.0.toRawBits())),
         radarCompassOffset = preferences.getFloat(keyRadarCompassOffset, 0f),
-        radarCompassOffsetElev = preferences.getFloat(keyRadarCompassOffsetElev, 0f)
+        radarCompassOffsetElev = preferences.getFloat(keyRadarCompassOffsetElev, 0f),
+        themePreset = ThemePreset.fromName(preferences.getString(keyThemePreset, null)),
+        radarIconStyle = RadarIconStyle.fromName(preferences.getString(keyRadarIconStyle, null)),
+        radarShowLabels = preferences.getBoolean(keyRadarShowLabels, false),
+        radarIconScale = preferences.getFloat(keyRadarIconScale, 1f).coerceIn(0.6f, 1.8f),
+        satellitesGrouped = preferences.getBoolean(keySatellitesGrouped, false)
     )
     //endregion
 

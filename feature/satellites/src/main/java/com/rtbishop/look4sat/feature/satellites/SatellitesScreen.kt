@@ -57,6 +57,7 @@ import com.rtbishop.look4sat.core.presentation.CardLoadingIndicator
 import com.rtbishop.look4sat.core.presentation.EmptyListCard
 import com.rtbishop.look4sat.core.presentation.IconCard
 import com.rtbishop.look4sat.core.presentation.InfoDialog
+import com.rtbishop.look4sat.core.domain.model.SatelliteCategory
 import com.rtbishop.look4sat.core.presentation.LocalSpacing
 import com.rtbishop.look4sat.core.presentation.MainTheme
 import com.rtbishop.look4sat.core.presentation.PrimaryIconCard
@@ -178,7 +179,7 @@ private fun SatellitesScreen(
             when {
                 uiState.isLoading -> CardLoadingIndicator()
                 uiState.itemsList.isEmpty() -> EmptyListCard(message = emptyMessage)
-                else -> SatellitesCard(uiState.itemsList) { id, isTicked ->
+                else -> SatellitesCard(uiState.itemsList, uiState.isGrouped) { id, isTicked ->
                     onAction(SatellitesAction.SelectSingle(id, isTicked))
                 }
             }
@@ -264,11 +265,15 @@ private fun SatellitesPreview() {
         SatItem(44444, "ISS", true),
         SatItem(88888, "Starlink", false)
     )
-    MainTheme { SatellitesCard(entries) { _, _ -> } }
+    MainTheme { SatellitesCard(entries, false) { _, _ -> } }
 }
 
 @Composable
-private fun SatellitesCard(items: List<SatItem>, onSelected: (Int, Boolean) -> Unit) {
+private fun SatellitesCard(
+    items: List<SatItem>,
+    isGrouped: Boolean,
+    onSelected: (Int, Boolean) -> Unit
+) {
     val selectedItems = items.filter { it.isSelected }
     val availableItems = items.filterNot { it.isSelected }
 
@@ -280,17 +285,71 @@ private fun SatellitesCard(items: List<SatItem>, onSelected: (Int, Boolean) -> U
             )
         }
 
-        if (selectedItems.isNotEmpty()) {
-            items(items = selectedItems, key = { item -> item.catnum }) { entry ->
-                Satellite(entry, onSelected, Modifier.animateItem())
+        if (isGrouped) {
+            // Selected items still float to the top of every group: the checkbox state is the
+            // reason the user opens this screen, it must never be buried.
+            SatelliteCategory.ordered().forEach { category ->
+                val inGroup = items.filter { SatelliteCategory.classify(it.name) == category }
+                if (inGroup.isNotEmpty()) {
+                    val ordered = inGroup.sortedByDescending { it.isSelected }
+                    stickyHeader(key = "cat_${category.name}") {
+                        CategoryHeader(
+                            text = stringResource(category.labelRes()),
+                            count = inGroup.size
+                        )
+                    }
+                    items(items = ordered, key = { item -> item.catnum }) { entry ->
+                        Satellite(entry, onSelected, Modifier.animateItem())
+                    }
+                }
             }
-        }
+        } else {
+            if (selectedItems.isNotEmpty()) {
+                items(items = selectedItems, key = { item -> item.catnum }) { entry ->
+                    Satellite(entry, onSelected, Modifier.animateItem())
+                }
+            }
 
-        if (availableItems.isNotEmpty()) {
-            items(items = availableItems, key = { item -> item.catnum }) { entry ->
-                Satellite(entry, onSelected, Modifier.animateItem())
+            if (availableItems.isNotEmpty()) {
+                items(items = availableItems, key = { item -> item.catnum }) { entry ->
+                    Satellite(entry, onSelected, Modifier.animateItem())
+                }
             }
         }
+    }
+}
+
+private fun SatelliteCategory.labelRes(): Int = when (this) {
+    SatelliteCategory.SPACE_STATION -> R.string.cat_space_station
+    SatelliteCategory.AMATEUR -> R.string.cat_amateur
+    SatelliteCategory.WEATHER -> R.string.cat_weather
+    SatelliteCategory.NAVIGATION -> R.string.cat_navigation
+    SatelliteCategory.SCIENCE -> R.string.cat_science
+    SatelliteCategory.COMMUNICATION -> R.string.cat_communication
+    SatelliteCategory.OTHER -> R.string.cat_other
+}
+
+@Composable
+private fun CategoryHeader(text: String, count: Int) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+        Text(
+            text = count.toString(),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSecondaryContainer
+        )
     }
 }
 

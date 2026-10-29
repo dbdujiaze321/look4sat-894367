@@ -53,7 +53,10 @@ class MainActivity : ComponentActivity() {
         val settingsRepo = (applicationContext as IContainerProvider).getMainContainer().settingsRepo
         setContent {
             val otherSettings by settingsRepo.otherSettings.collectAsState()
-            MainTheme(isDarkTheme = !otherSettings.stateOfLightTheme) { NavRoot() }
+            MainTheme(
+                isDarkTheme = !otherSettings.stateOfLightTheme,
+                preset = otherSettings.themePreset
+            ) { NavRoot() }
         }
     }
 

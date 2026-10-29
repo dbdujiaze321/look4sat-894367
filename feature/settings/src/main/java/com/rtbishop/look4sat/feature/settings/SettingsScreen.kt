@@ -37,6 +37,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +67,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rtbishop.look4sat.core.domain.model.DataSourcesSettings
 import com.rtbishop.look4sat.core.domain.model.OtherSettings
+import com.rtbishop.look4sat.core.domain.model.RadarIconStyle
+import com.rtbishop.look4sat.core.domain.model.ThemePreset
 import com.rtbishop.look4sat.core.domain.predict.GeoPos
 import com.rtbishop.look4sat.core.domain.repository.IContainerProvider
 import com.rtbishop.look4sat.core.presentation.CardButton
@@ -288,6 +291,9 @@ private fun SettingsScreen(uiState: SettingsState, onAction: (SettingsAction) ->
                     onBluetoothClick = permissions.launchBluetooth,
                     onRadioControlClick = { dialogs.radioControl = true }
                 )
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                AppearanceCard(uiState.otherSettings, onAction)
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
                 if (isVerticalLayout) {
@@ -546,6 +552,95 @@ private fun OtherCard(settings: OtherSettings, onAction: (SettingsAction) -> Uni
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+private fun AppearanceCardPreview() = MainTheme {
+    val values = OtherSettings(
+        stateOfAutoUpdate = true,
+        stateOfSensors = true,
+        stateOfSweep = true,
+        stateOfUtc = false,
+        stateOfLightTheme = false,
+        shouldSeeWarning = false,
+        shouldSeeWhatsNew = false
+    )
+    AppearanceCard(values, {})
+}
+
+/**
+ * Theme preset, radar marker and list grouping.
+ *
+ * Every control writes through [SettingsAction] into the same preference store the rest of the app
+ * reads, so a change is visible on the next recomposition without restarting the activity.
+ */
+@Composable
+private fun AppearanceCard(
+    settings: OtherSettings,
+    onAction: (SettingsAction) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.prefs_radar_title),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(text = stringResource(id = R.string.prefs_theme_preset))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                ThemePreset.entries.forEach { preset ->
+                    FilterChip(
+                        selected = settings.themePreset == preset,
+                        onClick = { onAction(SettingsAction.SetThemePreset(preset)) },
+                        label = { Text(text = stringResource(id = preset.labelRes())) }
+                    )
+                }
+            }
+            Text(text = stringResource(id = R.string.prefs_radar_icon_style))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                RadarIconStyle.entries.forEach { style ->
+                    FilterChip(
+                        selected = settings.radarIconStyle == style,
+                        onClick = { onAction(SettingsAction.SetRadarIconStyle(style)) },
+                        label = { Text(text = stringResource(id = style.labelRes())) }
+                    )
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SwitchTile(R.string.prefs_radar_labels, settings.radarShowLabels) {
+                    onAction(SettingsAction.ToggleRadarLabels(it))
+                }
+                SwitchTile(R.string.prefs_sat_grouped, settings.satellitesGrouped) {
+                    onAction(SettingsAction.ToggleSatellitesGrouped(it))
+                }
+            }
+            Text(
+                text = stringResource(id = R.string.prefs_radar_icon_scale) +
+                    "  ${(settings.radarIconScale * 100).toInt()}%"
+            )
+            Slider(
+                value = settings.radarIconScale,
+                onValueChange = { onAction(SettingsAction.SetRadarIconScale(it)) },
+                valueRange = 0.6f..1.8f
+            )
+        }
+    }
+}
+
+private fun ThemePreset.labelRes(): Int = when (this) {
+    ThemePreset.DEFAULT -> R.string.prefs_theme_default
+    ThemePreset.HIGH_CONTRAST -> R.string.prefs_theme_high_contrast
+    ThemePreset.RED_NIGHT -> R.string.prefs_theme_red_night
+}
+
+private fun RadarIconStyle.labelRes(): Int = when (this) {
+    RadarIconStyle.DOT -> R.string.prefs_radar_icon_dot
+    RadarIconStyle.OUTLINE -> R.string.prefs_radar_icon_outline
+    RadarIconStyle.GLYPH -> R.string.prefs_radar_icon_glyph
+}
+
 @Composable
 private fun CompassOffsetRow(
     labelResId: Int,
@@ -647,6 +742,11 @@ private fun CardCredits(modifier: Modifier = Modifier) {
             )
             Text(
                 text = stringResource(id = R.string.prefs_outro_thanks)
+            )
+            Text(
+                text = stringResource(id = R.string.prefs_outro_data),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = stringResource(id = R.string.prefs_outro_license),

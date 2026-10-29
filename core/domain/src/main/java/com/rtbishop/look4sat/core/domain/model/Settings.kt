@@ -64,7 +64,17 @@ data class OtherSettings(
     val lowElevation: Double = 15.0,
     val highElevation: Double = 45.0,
     val radarCompassOffset: Float = 0f,
-    val radarCompassOffsetElev: Float = 0f
+    val radarCompassOffsetElev: Float = 0f,
+    /** Built-in appearance preset; stored by name so new presets stay backward compatible. */
+    val themePreset: ThemePreset = ThemePreset.DEFAULT,
+    /** How satellites are drawn on the radar canvas. */
+    val radarIconStyle: RadarIconStyle = RadarIconStyle.OUTLINE,
+    /** Draws the catalogue number under each satellite icon. Off by default, it gets dense. */
+    val radarShowLabels: Boolean = false,
+    /** Icon scale multiplier applied on top of the category icon base size. */
+    val radarIconScale: Float = 1.0f,
+    /** Satellite picker groups the list by purpose instead of selected/available only. */
+    val satellitesGrouped: Boolean = false
 )
 
 /**

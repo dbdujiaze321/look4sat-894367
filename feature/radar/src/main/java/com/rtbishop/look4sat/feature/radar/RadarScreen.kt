@@ -32,6 +32,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.asPaddingValues
@@ -41,6 +43,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
@@ -49,19 +52,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rtbishop.look4sat.core.domain.model.SatRadio
+import com.rtbishop.look4sat.core.domain.predict.OrbitalPass
 import com.rtbishop.look4sat.core.domain.predict.OrbitalPos
 import com.rtbishop.look4sat.core.domain.repository.IContainerProvider
 import com.rtbishop.look4sat.core.domain.utility.DopplerFrequencyCalculator
@@ -173,11 +181,11 @@ private fun RadarScreen(
             }
         }
         if (isVertical) {
-            RadarCard(uiState, Modifier.weight(1f))
+            RadarCard(uiState, timeNow, Modifier.weight(1f))
             PagerCard(uiState, onAction, requestMicPermission, requestSaveImage, Modifier.weight(1f))
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                RadarCard(uiState, Modifier.weight(1f))
+                RadarCard(uiState, timeNow, Modifier.weight(1f))
                 PagerCard(uiState, onAction, requestMicPermission, requestSaveImage, Modifier.weight(1f))
             }
         }
@@ -254,8 +262,11 @@ private fun PagerCard(
 }
 
 @Composable
-private fun RadarCard(uiState: RadarState, modifier: Modifier = Modifier) {
+private fun RadarCard(uiState: RadarState, timeNow: StateFlow<Long>, modifier: Modifier = Modifier) {
     val satellitePos = uiState.orbitalPos
+    // Long pressing the marker opens a transient card; tapping it dismisses it again.
+    var showMiniCard by remember { mutableStateOf(false) }
+    val now by timeNow.collectAsStateWithLifecycle()
     val shouldAnimateBorder = satellitePos?.aboveHorizon == true && satellitePos.eclipsed
     // Always call these composables unconditionally — conditional composable calls violate
     // Compose's slot-table stability rules and can crash or produce incorrect state
@@ -294,10 +305,98 @@ private fun RadarCard(uiState: RadarState, modifier: Modifier = Modifier) {
                     modifier = Modifier.align(Alignment.Center),
                     sunPosition = uiState.sunPosition,
                     moonPosition = uiState.moonPosition,
+                    category = uiState.satelliteCategory,
+                    iconStyle = uiState.radarIconStyle,
+                    showLabel = uiState.radarShowLabels,
+                    label = uiState.satelliteLabel,
+                    iconScale = uiState.radarIconScale,
+                    onLongPressSatellite = { showMiniCard = true }
                 )
                 PositionOverlay(position)
+                val miniCardPass = uiState.currentPass
+                if (showMiniCard && miniCardPass != null) {
+                    SatelliteMiniCard(
+                        pass = miniCardPass,
+                        transceivers = uiState.transceivers.transmitters,
+                        now = now,
+                        onDismiss = { showMiniCard = false },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
             }
         }
+    }
+}
+
+/**
+ * Transient card shown when the radar marker is long pressed.
+ *
+ * Deliberately small and dismissible with a single tap: it must never cover the radar while the
+ * user is actually aiming an antenna.
+ */
+@Composable
+private fun SatelliteMiniCard(
+    pass: OrbitalPass,
+    transceivers: List<SatRadio>,
+    now: Long,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val downlink = transceivers.firstNotNullOfOrNull { it.downlinkLow }
+    Card(modifier = modifier.padding(12.dp), onClick = onDismiss) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+        ) {
+            Text(
+                text = pass.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = stringResource(R.string.pass_satId, pass.catNum),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.radar_mini_aos, countdown(pass.aosTime - now)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = stringResource(R.string.radar_mini_los, countdown(pass.losTime - now)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (downlink != null) {
+                Text(
+                    text = stringResource(
+                        R.string.radar_mini_transceivers,
+                        transceivers.size,
+                        formatFrequency(downlink)
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+/** mm:ss for short waits, h:mm:ss beyond an hour. */
+private fun countdown(millis: Long): String {
+    val totalSeconds = kotlin.math.abs(millis) / 1000
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+    return if (hours > 0) {
+        String.format("%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format("%02d:%02d", minutes, seconds)
     }
 }
 

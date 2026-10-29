@@ -314,4 +314,33 @@
     <string name="workbench_refreshing">Updating</string>
     <string name="workbench_refresh_failed">Update failed. Cached data is unchanged.</string>
     <string name="workbench_satellite_count">%1$d satellites</string>
+
+    <!-- Radar marker card -->
+    <string name="radar_mini_aos">AOS in %1$s</string>
+    <string name="radar_mini_los">LOS in %1$s</string>
+    <string name="radar_mini_transceivers">%1$d transceivers · %2$s</string>
+
+    <!-- Appearance and radar -->
+    <string name="prefs_radar_title">Appearance &amp; radar</string>
+    <string name="prefs_theme_preset">Theme</string>
+    <string name="prefs_theme_default">Default</string>
+    <string name="prefs_theme_high_contrast">High contrast</string>
+    <string name="prefs_theme_red_night">Red night</string>
+    <string name="prefs_radar_icon_style">Satellite marker</string>
+    <string name="prefs_radar_icon_dot">Dot</string>
+    <string name="prefs_radar_icon_outline">Outline</string>
+    <string name="prefs_radar_icon_glyph">Glyph</string>
+    <string name="prefs_radar_labels">Show catalogue numbers</string>
+    <string name="prefs_radar_icon_scale">Marker size</string>
+    <string name="prefs_sat_grouped">Group satellites by purpose</string>
+
+    <!-- Satellite purpose groups -->
+    <string name="cat_space_station">Space stations</string>
+    <string name="cat_amateur">Amateur radio</string>
+    <string name="cat_weather">Weather</string>
+    <string name="cat_navigation">Navigation</string>
+    <string name="cat_science">Science</string>
+    <string name="cat_communication">Communication</string>
+    <string name="cat_other">Other</string>
+    <string name="prefs_outro_data" translatable="false"> Transmitter data: SatNOGS DB (https://db.satnogs.org), CC BY-SA 4.0, modified and cached locally.\nOrbital elements: CelesTrak (https://celestrak.org). </string>
 </resources>

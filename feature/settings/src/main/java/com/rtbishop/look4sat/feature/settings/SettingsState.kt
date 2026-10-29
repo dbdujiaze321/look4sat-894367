@@ -20,6 +20,8 @@ package com.rtbishop.look4sat.feature.settings
 import com.rtbishop.look4sat.core.domain.model.DataSourcesSettings
 import com.rtbishop.look4sat.core.domain.model.OtherSettings
 import com.rtbishop.look4sat.core.domain.model.RCSettings
+import com.rtbishop.look4sat.core.domain.model.RadarIconStyle
+import com.rtbishop.look4sat.core.domain.model.ThemePreset
 import com.rtbishop.look4sat.core.domain.model.RadioControlSettings
 import com.rtbishop.look4sat.core.domain.predict.GeoPos
 
@@ -68,6 +70,11 @@ sealed interface SettingsAction {
     data class ToggleNightMode(val value: Boolean) : SettingsAction
     data class SetRadarCompassOffset(val value: Float) : SettingsAction
     data class SetRadarCompassOffsetElev(val value: Float) : SettingsAction
+    data class SetThemePreset(val preset: ThemePreset) : SettingsAction
+    data class SetRadarIconStyle(val style: RadarIconStyle) : SettingsAction
+    data class ToggleRadarLabels(val value: Boolean) : SettingsAction
+    data class SetRadarIconScale(val value: Float) : SettingsAction
+    data class ToggleSatellitesGrouped(val value: Boolean) : SettingsAction
 
     // Remote control
     data class UpdateRC(val settings: RCSettings) : SettingsAction

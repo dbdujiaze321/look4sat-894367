@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import com.rtbishop.look4sat.core.domain.model.ThemePreset
 
 val LocalSpacing = compositionLocalOf { Spacing }
 
@@ -50,19 +51,36 @@ data object Spacing {
     val extraLarge = 24.dp
 }
 
+/**
+ * Applies the Material colour scheme for [preset] and publishes the radar tokens alongside it.
+ *
+ * The preset is passed in from the activity so a change takes effect on the next recomposition
+ * without restarting it: nothing here holds mutable state.
+ */
 @Composable
-fun MainTheme(isDarkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+fun MainTheme(
+    isDarkTheme: Boolean = isSystemInDarkTheme(),
+    preset: ThemePreset = ThemePreset.DEFAULT,
+    content: @Composable () -> Unit
+) {
     val view = LocalView.current
+    val colorScheme = colorSchemeFor(preset, isDarkTheme)
+    val radarPalette = radarPaletteFor(preset, isDarkTheme)
     if (view.isInEditMode) {
-        MaterialTheme(darkScheme, shapes, typography, content)
+        CompositionLocalProvider(LocalRadarPalette provides radarPalette) {
+            MaterialTheme(colorScheme, shapes, typography, content)
+        }
     } else {
-        CompositionLocalProvider(LocalSpacing provides Spacing) {
-            val colorScheme = if (isDarkTheme) darkScheme else lightScheme
+        val useLightSystemBars = !isDarkTheme && preset != ThemePreset.RED_NIGHT
+        CompositionLocalProvider(
+            LocalSpacing provides Spacing,
+            LocalRadarPalette provides radarPalette
+        ) {
             SideEffect {
                 val window = (view.context as ComponentActivity).window
                 val insetsController = WindowCompat.getInsetsController(window, view)
-                insetsController.isAppearanceLightStatusBars = !isDarkTheme
-                insetsController.isAppearanceLightNavigationBars = !isDarkTheme
+                insetsController.isAppearanceLightStatusBars = useLightSystemBars
+                insetsController.isAppearanceLightNavigationBars = useLightSystemBars
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     window.isNavigationBarContrastEnforced = false
                 }
@@ -72,7 +90,7 @@ fun MainTheme(isDarkTheme: Boolean = isSystemInDarkTheme(), content: @Composable
     }
 }
 
-private val lightScheme = lightColorScheme(
+internal val baseLightScheme = lightColorScheme(
     primary = Color(0xFF715C0C),
     onPrimary = Color(0xFFFFFFFF),
     secondary = Color(0xFF685E40),
@@ -95,7 +113,7 @@ private val lightScheme = lightColorScheme(
     scrim = Color(0xFF000000)
 )
 
-private val darkScheme = darkColorScheme(
+internal val baseDarkScheme = darkColorScheme(
     primary = Color(0xFFFFE082), // main accent, switch background, active progress
     onPrimary = Color(0xFF000000), // on main accent, switch knob
 //    primaryContainer = Color(0xFF121212),

@@ -17,7 +17,9 @@
  */
 package com.rtbishop.look4sat.feature.radar
 
+import com.rtbishop.look4sat.core.domain.model.RadarIconStyle
 import com.rtbishop.look4sat.core.domain.model.SatRadio
+import com.rtbishop.look4sat.core.domain.model.SatelliteCategory
 import com.rtbishop.look4sat.core.domain.predict.CelestialComputer
 import com.rtbishop.look4sat.core.domain.predict.OrbitalPass
 import com.rtbishop.look4sat.core.domain.predict.OrbitalPos
@@ -64,7 +66,12 @@ data class RadarState(
     val transceivers: TransceiverSubState = TransceiverSubState(),
     val radioControl: RadioControlSubState = RadioControlSubState(),
     val sstv: SstvSubState = SstvSubState(),
-    val calculatorOffsetKHz: String = ""
+    val calculatorOffsetKHz: String = "",
+    val radarIconStyle: RadarIconStyle = RadarIconStyle.OUTLINE,
+    val radarShowLabels: Boolean = false,
+    val radarIconScale: Float = 1f,
+    val satelliteCategory: SatelliteCategory = SatelliteCategory.OTHER,
+    val satelliteLabel: String = ""
 )
 
 enum class SstvStatus { Idle, Recording }

@@ -263,4 +263,33 @@
     <string name="workbench_refreshing">更新中</string>
     <string name="workbench_refresh_failed">更新失败，本地数据未受影响。</string>
     <string name="workbench_satellite_count">%1$d 颗卫星</string>
+
+    <!-- Radar marker card -->
+    <string name="radar_mini_aos">AOS 还有 %1$s</string>
+    <string name="radar_mini_los">LOS 还有 %1$s</string>
+    <string name="radar_mini_transceivers">%1$d 个转发器 · %2$s</string>
+
+    <!-- Appearance and radar -->
+    <string name="prefs_radar_title">外观与雷达</string>
+    <string name="prefs_theme_preset">主题</string>
+    <string name="prefs_theme_default">默认</string>
+    <string name="prefs_theme_high_contrast">高对比</string>
+    <string name="prefs_theme_red_night">红色夜间</string>
+    <string name="prefs_radar_icon_style">卫星标记</string>
+    <string name="prefs_radar_icon_dot">圆点</string>
+    <string name="prefs_radar_icon_outline">轮廓</string>
+    <string name="prefs_radar_icon_glyph">实心</string>
+    <string name="prefs_radar_labels">显示编号</string>
+    <string name="prefs_radar_icon_scale">标记大小</string>
+    <string name="prefs_sat_grouped">卫星按用途分组</string>
+
+    <!-- Satellite purpose groups -->
+    <string name="cat_space_station">空间站</string>
+    <string name="cat_amateur">业余无线电</string>
+    <string name="cat_weather">气象</string>
+    <string name="cat_navigation">导航</string>
+    <string name="cat_science">科学</string>
+    <string name="cat_communication">通信</string>
+    <string name="cat_other">其他</string>
+    <string name="prefs_outro_data">转发器数据：SatNOGS DB（https://db.satnogs.org），CC BY-SA 4.0，经本地修改与缓存。\n轨道根数：CelesTrak（https://celestrak.org）。 </string>
 </resources>
