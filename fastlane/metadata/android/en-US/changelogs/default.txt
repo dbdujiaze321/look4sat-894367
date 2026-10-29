@@ -1,0 +1,6 @@
+* Added AOS/LOS timers to PassItem and NextPassRow components
+* Replaced Swipe-to-Filter functionality with a Search bar
+* Tweaked SSTV image saving flow, added permissions #264
+* Fixed linear Doppler calculator and offset restore #265
+* Corrected CelestialComputer moon calculations error #266
+* Added Look4Sat-rPi project ref to app Settings/README #267

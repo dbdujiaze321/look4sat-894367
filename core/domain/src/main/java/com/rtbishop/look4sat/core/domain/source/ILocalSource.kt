@@ -1,0 +1,50 @@
+/*
+ * Look4Sat. Amateur radio satellite tracker and pass predictor.
+ * Copyright (C) 2019-2026 Arty Bishop and contributors.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package com.rtbishop.look4sat.core.domain.source
+
+import com.rtbishop.look4sat.core.domain.model.SatItem
+import com.rtbishop.look4sat.core.domain.model.SatRadio
+import com.rtbishop.look4sat.core.domain.predict.OrbitalData
+import com.rtbishop.look4sat.core.domain.predict.OrbitalObject
+
+interface ILocalSource {
+    suspend fun getEntriesTotal(): Int
+    suspend fun getEntriesList(): List<SatItem>
+    suspend fun getEntriesWithIds(ids: List<Int>): List<OrbitalObject>
+    suspend fun getEntriesEpochs(): Map<Int, Double>
+    suspend fun getEntriesNames(): Map<Int, String>
+    suspend fun renameEntries(names: Map<Int, String>)
+    suspend fun deleteEntriesWithIds(ids: List<Int>)
+
+    /**
+     * Flags entries as stale without deleting them. Absence from every feed is not proof of decay,
+     * so the catalogue keeps the record and only marks it.
+     */
+    suspend fun markEntriesStale(ids: List<Int>)
+    suspend fun clearStaleEntries(ids: List<Int>)
+    suspend fun insertEntries(entries: List<OrbitalData>)
+    suspend fun deleteEntries()
+    suspend fun getIdsWithModes(modes: List<String>): List<Int>
+    suspend fun getRadiosTotal(): Int
+    suspend fun getRadiosWithId(id: Int): List<SatRadio>
+    suspend fun insertRadios(radios: List<SatRadio>, isCustom: Boolean)
+    suspend fun deleteRadios()
+
+    /** Drops the transceivers provided by the remote sources, keeping the imported ones. */
+    suspend fun deleteManagedRadios()
+}

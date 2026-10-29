@@ -1,0 +1,327 @@
+/*
+ * Look4Sat. Amateur radio satellite tracker and pass predictor.
+ * Copyright (C) 2019-2026 Arty Bishop and contributors.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package com.rtbishop.look4sat.feature.map
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.rtbishop.look4sat.core.domain.predict.CelestialComputer
+import com.rtbishop.look4sat.core.domain.predict.GeoPos
+import com.rtbishop.look4sat.core.domain.predict.OrbitalObject
+import com.rtbishop.look4sat.core.domain.predict.OrbitalPass
+import com.rtbishop.look4sat.core.domain.predict.OrbitalPos
+import com.rtbishop.look4sat.core.domain.repository.IMainContainer
+import com.rtbishop.look4sat.core.domain.repository.ISatelliteRepo
+import com.rtbishop.look4sat.core.domain.repository.ISettingsRepo
+import com.rtbishop.look4sat.core.domain.utility.clipLat
+import com.rtbishop.look4sat.core.domain.utility.clipLon
+import com.rtbishop.look4sat.core.domain.utility.positionToQth
+import com.rtbishop.look4sat.core.domain.utility.toMapGeoPos
+import com.rtbishop.look4sat.core.domain.utility.toDegrees
+import com.rtbishop.look4sat.core.domain.utility.toTimerString
+import com.rtbishop.look4sat.core.presentation.getDefaultPass
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import java.util.Date
+import kotlin.time.Duration.Companion.milliseconds
+
+class MapViewModel(
+    private val satelliteRepo: ISatelliteRepo,
+    private val settingsRepo: ISettingsRepo
+) : ViewModel() {
+
+    private val stationPos = settingsRepo.stationPosition.value
+    private val defaultPass = getDefaultPass()
+    private val _uiState = MutableStateFlow(
+        MapState(
+            isLightUi = settingsRepo.otherSettings.value.stateOfLightTheme,
+            isUtc = settingsRepo.otherSettings.value.stateOfUtc,
+            orbitalPass = defaultPass
+        )
+    )
+    private var allPasses = satelliteRepo.passes.value
+    private var allSatellites = satelliteRepo.satellites.value
+    private var dataUpdateJob: Job? = null
+    private var dataUpdateRate = 1000L
+    private var selectedOrbitalObject: OrbitalObject? = null
+
+    /** Gates the prediction loop so it doesn't burn CPU while the map isn't on screen */
+    private val isScreenVisible = MutableStateFlow(true)
+    val uiState: StateFlow<MapState> = _uiState
+
+    private val _timeNow = MutableStateFlow(System.currentTimeMillis())
+    val timeNow: StateFlow<Long> = _timeNow
+
+    init {
+        viewModelScope.launch {
+            settingsRepo.otherSettings.collectLatest { settings ->
+                _uiState.update { it.copy(isUtc = settings.stateOfUtc, isLightUi = settings.stateOfLightTheme) }
+            }
+        }
+        val (selectedCatNum, _) = satelliteRepo.selectedPass.value
+        selectDefaultSatellite(if (selectedCatNum != 0) selectedCatNum else -1)
+    }
+
+    fun onAction(action: MapAction) {
+        when (action) {
+            MapAction.SelectPrev -> scrollSelection(true)
+            MapAction.SelectNext -> scrollSelection(false)
+            is MapAction.SelectItem -> selectSatellite(action.item)
+            is MapAction.SelectDefaultItem -> selectDefaultSatellite(action.catnum)
+            is MapAction.SetVisible -> isScreenVisible.value = action.isVisible
+        }
+    }
+
+    private fun getStationPosition() {
+        val osmLat = clipLat(stationPos.latitude)
+        val osmLon = clipLon(stationPos.longitude)
+        _uiState.update { it.copy(stationPosition = GeoPos(osmLat, osmLon)) }
+    }
+
+    private fun selectDefaultSatellite(catnum: Int) {
+        if (allSatellites.isNotEmpty()) {
+            if (catnum == -1) {
+                allPasses.find { pass -> pass.progress < 1 && !pass.isDeepSpace }
+                    ?.let { pass -> selectSatellite(pass.orbitalObject) }
+            } else {
+                allSatellites.find { it.data.catnum == catnum }?.let { selectSatellite(it) }
+            }
+        }
+    }
+
+    private fun scrollSelection(decrement: Boolean) {
+        if (allSatellites.isNotEmpty()) {
+            val index = allSatellites.indexOf(selectedOrbitalObject)
+            if (decrement) {
+                if (index > 0) selectSatellite(allSatellites[index - 1])
+                else selectSatellite(allSatellites[allSatellites.size - 1])
+            } else {
+                if (index < allSatellites.size - 1) selectSatellite(allSatellites[index + 1])
+                else selectSatellite(allSatellites[0])
+            }
+        }
+    }
+
+    private fun selectSatellite(orbitalObject: OrbitalObject, updateFreq: Long = dataUpdateRate) {
+        selectedOrbitalObject = orbitalObject
+        viewModelScope.launch {
+            dataUpdateJob?.cancelAndJoin()
+            // Default dispatcher is mandatory: viewModelScope is Main.immediate, and every
+            // satelliteRepo call internally hops to Default and resumes back on the caller's
+            // dispatcher. On Main that posts one continuation per satellite per tick, which
+            // floods the looper and ANRs for users tracking thousands of objects.
+            dataUpdateJob = launch(Dispatchers.Default) {
+                val dateNow = Date()
+                getStationPosition()
+                getSatTrack(orbitalObject, stationPos, dateNow)
+                // Scale update interval based on satellite count to avoid excessive CPU usage
+                val effectiveRate = when {
+                    allSatellites.size > 5000 -> maxOf(updateFreq, 3000L)
+                    allSatellites.size > 1000 -> maxOf(updateFreq, 2000L)
+                    else -> updateFreq
+                }
+                while (isActive) {
+                    // Suspends while the map is off-screen instead of predicting into the void
+                    isScreenVisible.first { it }
+                    val timeNow = System.currentTimeMillis()
+                    _timeNow.value = timeNow
+                    dateNow.time = timeNow
+                    updateMapState(orbitalObject, allSatellites, stationPos, dateNow)
+                    delay(effectiveRate.milliseconds)
+                }
+            }
+        }
+    }
+
+    /**
+     * Combined update: computes all satellite positions in parallel, then derives
+     * the selected satellite's footprint and info panel data from the same batch,
+     * and emits a single state update to avoid redundant recompositions.
+     */
+    private suspend fun updateMapState(
+        selected: OrbitalObject,
+        orbitalObjects: List<OrbitalObject>,
+        pos: GeoPos,
+        date: Date
+    ) {
+        // 1. Compute all positions in parallel, collecting full OrbitalPos for the selected sat
+        val positionsMap = HashMap<OrbitalObject, GeoPos>(orbitalObjects.size)
+        var selectedSatPos: OrbitalPos? = null
+
+        coroutineScope {
+            // Chunk satellites to balance parallelism vs coroutine overhead
+            val chunkSize = maxOf(1, orbitalObjects.size / PARALLEL_CHUNKS)
+            val deferreds = orbitalObjects.chunked(chunkSize).map { chunk ->
+                async {
+                    val localPositions = ArrayList<Pair<OrbitalObject, GeoPos>>(chunk.size)
+                    var localSelectedPos: OrbitalPos? = null
+                    for (satellite in chunk) {
+                        val satPos = satelliteRepo.getPosition(satellite, pos, date.time)
+                        localPositions.add(satellite to satPos.toMapGeoPos())
+                        if (satellite === selected) {
+                            localSelectedPos = satPos
+                        }
+                    }
+                    Pair(localPositions, localSelectedPos)
+                }
+            }
+            for ((localPositions, localSelectedPos) in deferreds.awaitAll()) {
+                for ((first, second) in localPositions) {
+                    positionsMap[first] = second
+                }
+                if (localSelectedPos != null) {
+                    selectedSatPos = localSelectedPos
+                }
+            }
+        }
+
+        // 2. Derive footprint, info data, sun and moon position from already-computed state
+        val satPos = selectedSatPos ?: satelliteRepo.getPosition(selected, pos, date.time)
+        // Range circle is 721 trig-heavy points — keep it on this background dispatcher
+        val footprint = satPos.getRangeCircle()
+        val mapData = buildMapData(selected, satPos, date)
+        val sunPos = CelestialComputer.getSunPosition(stationPos, date.time)
+        val moonPos = CelestialComputer.getMoonPosition(stationPos, date.time)
+
+        // 3. Single atomic state update — one recomposition per cycle
+        _uiState.update {
+            it.copy(
+                positions = positionsMap,
+                footprint = footprint,
+                mapData = mapData.first,
+                orbitalPass = mapData.second,
+                sunLatDeg = sunPos.latitude,
+                sunLonDeg = sunPos.longitude,
+                moonLatDeg = moonPos.declination, // sub-lunar latitude = declination
+                moonLonDeg = if (moonPos.gha <= 180.0) -moonPos.gha else 360.0 - moonPos.gha
+            )
+        }
+    }
+
+    /**
+     * Builds the map info panel data from an already-computed OrbitalPos.
+     * No additional getPosition() call needed.
+     */
+    private fun buildMapData(
+        sat: OrbitalObject,
+        satPos: OrbitalPos,
+        date: Date
+    ): Pair<MapData, OrbitalPass> {
+        var orbitalPass = defaultPass
+        var aosTime = 0L.toTimerString()
+        var isTimeAos = true
+        allPasses.find { pass -> pass.catNum == sat.data.catnum && pass.progress < 1 }
+            ?.let { satPass ->
+                orbitalPass = satPass
+                if (!satPass.isDeepSpace) {
+                    when {
+                        date.time < satPass.aosTime -> {
+                            // Pass hasn't started yet — count down to AOS
+                            isTimeAos = true
+                            aosTime = (satPass.aosTime - date.time).toTimerString()
+                        }
+
+                        date.time < satPass.losTime -> {
+                            // Pass is in progress — count down to LOS
+                            isTimeAos = false
+                            aosTime = (satPass.losTime - date.time).toTimerString()
+                        }
+                        // else: pass has ended (losTime <= date.time) — keep default "00:00:00"
+                    }
+                }
+            }
+        val azimuth = satPos.azimuth.toDegrees()
+        val elevation = satPos.elevation.toDegrees()
+        val osmPos = satPos.toMapGeoPos()
+        val qthLoc = positionToQth(osmPos.latitude, osmPos.longitude) ?: "-- --"
+        val velocity = satPos.getOrbitalVelocity()
+        val phase = satPos.phase.toDegrees()
+        val visibility = satPos.eclipsed
+        val satData = MapData(
+            sat.data.catnum,
+            sat.data.name,
+            aosTime,
+            isTimeAos,
+            azimuth,
+            elevation,
+            satPos.distance,
+            satPos.altitude,
+            velocity,
+            qthLoc,
+            osmPos,
+            sat.data.orbitalPeriod,
+            phase,
+            visibility
+        )
+        return satData to orbitalPass
+    }
+
+    private suspend fun getSatTrack(orbitalObject: OrbitalObject, pos: GeoPos, date: Date) {
+        val satTracks = mutableListOf<List<GeoPos>>()
+        val currentTrack = mutableListOf<GeoPos>()
+        val endDate = Date(date.time + (orbitalObject.data.orbitalPeriod * 2.4 * 60000L).toLong())
+        var oldLongitude = 0.0
+        satelliteRepo.getTrack(orbitalObject, pos, date.time, endDate.time).forEach { satPos ->
+            val currentPosition = satPos.toMapGeoPos()
+            if (oldLongitude < -170.0 && currentPosition.longitude > 170.0) {
+                // adding left terminal position
+                currentTrack.add(GeoPos(currentPosition.latitude, -180.0))
+                val finishedTrack = mutableListOf<GeoPos>().apply { addAll(currentTrack) }
+                satTracks.add(finishedTrack)
+                currentTrack.clear()
+            } else if (oldLongitude > 170.0 && currentPosition.longitude < -170.0) {
+                // adding right terminal position
+                currentTrack.add(GeoPos(currentPosition.latitude, 180.0))
+                val finishedTrack = mutableListOf<GeoPos>().apply { addAll(currentTrack) }
+                satTracks.add(finishedTrack)
+                currentTrack.clear()
+            }
+            oldLongitude = currentPosition.longitude
+            currentTrack.add(currentPosition)
+        }
+        satTracks.add(currentTrack)
+        _uiState.update { it.copy(track = satTracks) }
+    }
+
+    companion object {
+        /** Number of parallel chunks for satellite position computation */
+        private val PARALLEL_CHUNKS = Runtime.getRuntime().availableProcessors().coerceIn(2, 8)
+
+        fun factory(container: IMainContainer) = viewModelFactory {
+            initializer {
+                MapViewModel(
+                    satelliteRepo = container.satelliteRepo,
+                    settingsRepo = container.settingsRepo
+                )
+            }
+        }
+    }
+}

@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Commmon -->
+    <string name="app_name" translatable="false">Look4Sat</string>
+    <string name="btn_accept">Accept</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="empty_list_message">No data to show</string>
+
+    <!-- Navigation -->
+    <string name="nav_sat">Satellites</string>
+    <string name="nav_pass">Passes</string>
+    <string name="nav_radar">Radar</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_prefs">Settings</string>
+    <string name="nav_status" translatable="false">AMSAT</string>
+
+    <!-- Satellites screen -->
+    <string name="sat_type_hint">Modes: %s</string>
+    <string name="sat_type_title">Select modes</string>
+    <string name="sat_search_hint">Id - Name</string>
+    <string name="sat_search_clear">Clear</string>
+    <string name="sat_clear_all">Clear all</string>
+    <string name="sat_select_all">Select all</string>
+    <string name="sat_group_selected">Selected</string>
+    <string name="sat_group_available">Available</string>
+    <string name="sat_group_selected_count">Selected (%1$d)</string>
+    <string name="sat_group_available_count">Available (%1$d)</string>
+    <string name="sat_empty_list_message">"Make sure your search query is correct and the DB is updated"</string>
+    <string name="sat_warning_title">Warning\!</string>
+    <string name="sat_warning_message">
+        There are over 9000 satellites listed in this app.
+        It makes no sense to track them all at the same time.
+        \n\nAlways try to narrow down the list to only the ones
+        you\'re interested in via search and the modes selector.</string>
+
+    <!-- Passes screen -->
+    <string name="pass_filter_title">Filter passes</string>
+    <string name="pass_filter_elev">Minimal elevation</string>
+    <string name="pass_filter_hours">Time ahead</string>
+    <string name="pass_filter_aos_time">AOS window</string>
+    <string name="pass_filter_invert_time">Invert AOS window</string>
+    <string name="pass_filter_deep_space">DeepSpace (period >225min)</string>
+    <string name="pass_time_placeholder" translatable="false"> -- : -- : -- </string>
+    <string name="pass_modes_title">Select modes</string>
+    <string name="pass_satId" translatable="false">%05d</string>
+    <string name="pass_elevation">Elevation: %.1f°</string>
+    <string name="pass_deep_space" translatable="false">DeepSpace</string>
+    <string name="pass_altitude">Altitude: %d km</string>
+    <string name="pass_aosLos" translatable="false">%03d°/%03d°</string>
+    <string name="pass_azimuth" translatable="false">%03d°</string>
+    <string name="pass_timer_aos" translatable="false">AOS %s</string>
+    <string name="pass_timer_los" translatable="false">LOS %s</string>
+    <string name="pass_empty_list_message">
+        Make sure your filters are correct and you have selected satellites</string>
+    <string name="pass_empty_search_message">No upcoming passes match your search</string>
+    <string name="pass_error_message">There are no upcoming satellite passes to display</string>
+    <string name="pass_welcome_title">Welcome to Look4Sat\!</string>
+    <string name="pass_welcome_message">
+        Make sure to set your position via GPS, Lat/Lon or QTH in Settings.
+        \n\nPlease update the database at least weekly to get accurate predictions.</string>
+    <string name="pass_whatsnew_title" translatable="false">What\'s new in Look4Sat</string>
+    <string name="pass_whatsnew_message" translatable="false">
+        * Added AOS/LOS timers to PassItem and NextPassRow components
+        \n\n* Replaced Swipe-to-Filter functionality with a Search bar
+        \n\n* Tweaked SSTV image saving flow, added permissions #264
+        \n\n* Fixed linear Doppler calculator and offset restore #265
+        \n\n* Corrected CelestialComputer moon calculations error #266
+        \n\n* Added Look4Sat-rPi project ref to app Settings/README #267
+    </string>
+
+    <!-- AMSAT Status screen -->
+    <string name="nav_amsat">AMSAT</string>
+    <string name="amsat_title">AMSAT Satellite Status</string>
+    <string name="amsat_refresh">Refresh</string>
+    <string name="amsat_retry">Retry</string>
+    <string name="amsat_updated">Updated:</string>
+    <string name="amsat_active">Active</string>
+    <string name="amsat_tlm">TLM/Beacon</string>
+    <string name="amsat_not_heard">Not Heard</string>
+    <string name="amsat_conflict">Conflicting</string>
+    <string name="amsat_name">Name</string>
+    <string name="amsat_load_failed">Load failed - check network and retry</string>
+    <string name="amsat_no_reports">No reports for this period</string>
+    <string name="amsat_close">Close</string>
+    <string name="amsat_status_heard">Heard</string>
+    <string name="amsat_status_tlm_only">Telemetry Only</string>
+    <string name="amsat_status_not_heard">Not Heard</string>
+    <string name="amsat_status_crew_active">Crew Active</string>
+    <string name="amsat_upload">Upload</string>
+    <string name="amsat_upload_back">Back</string>
+    <string name="amsat_upload_report">Upload report to AMSAT</string>
+    <string name="amsat_upload_status">Status</string>
+    <string name="amsat_upload_callsign">Callsign</string>
+    <string name="amsat_upload_grid">Grid</string>
+    <string name="amsat_upload_time_now">Time: current UTC %s</string>
+    <string name="amsat_upload_submit">Submit to AMSAT</string>
+    <string name="amsat_upload_confirm">Upload</string>
+    <string name="amsat_upload_confirm_title">Confirm AMSAT upload</string>
+    <string name="amsat_upload_confirm_message">This public report will be uploaded to AMSAT.\nSatellite: %1$s\nStatus: %2$s\nCallsign: %3$s\nGrid: %4$s</string>
+    <string name="amsat_upload_grid_none">Not provided</string>
+    <string name="amsat_upload_success">Report uploaded</string>
+    <string name="amsat_upload_failed">Upload failed: %s</string>
+    <string name="amsat_upload_callsign_required">Callsign is required</string>
+    <string name="amsat_upload_grid_invalid">Grid must be a 4 or 6 character Maidenhead locator</string>
+    <string name="amsat_upload_active">Active</string>
+    <string name="amsat_upload_tlm">TLM/Beacon</string>
+    <string name="amsat_upload_not_heard">Not Heard</string>
+    <string name="amsat_upload_crew_active">Crew Active</string>
+
+    <!-- Radar screen -->
+    <string name="radar_back">Back</string>
+    <string name="radar_notify">Notify</string>
+    <string name="radar_az_text">Azimuth</string>
+    <string name="radar_az_value" translatable="false">%.1f°</string>
+    <string name="radar_el_text">Elevation</string>
+    <string name="radar_el_value" translatable="false">%.1f°</string>
+    <string name="radar_alt_text">Altitude</string>
+    <string name="radar_alt_value" translatable="false">%.0f km</string>
+    <string name="radar_dist_text">Distance</string>
+    <string name="radar_dist_value" translatable="false">%.0f km</string>
+    <string name="radar_eclipsed">Eclipsed</string>
+    <string name="radar_downlink">Downlink</string>
+    <string name="radar_uplink">Uplink</string>
+    <string name="radar_link_low" translatable="false">%.4f</string>
+    <string name="radar_link_lowHigh" translatable="false">%.4f - %.4f</string>
+    <string name="radar_no_link" translatable="false">- - . - -</string>
+    <string name="radar_no_data">This satellite has no transceivers</string>
+    <string name="radar_add">Add</string>
+    <string name="radar_data">Satellite transceivers:</string>
+    <string name="radar_inverted">Inverted: %s</string>
+    <string name="radar_mode">Mode: %s</string>
+    <string name="radar_string_no">No</string>
+    <string name="radar_string_yes">Yes</string>
+    <string name="radar_visible">Visible</string>
+    <string name="radar_doppler_tx_hint">Enter TX freq (MHz)</string>
+    <string name="radar_doppler_rx_hint">Enter RX freq (MHz)</string>
+    <string name="radar_doppler_offset_hint">Offset (kHz)</string>
+
+    <!-- Radar screen (CAT control / SSTV) -->
+    <string name="radar_connect">Connect</string>
+    <string name="radar_disconnect">Disconnect</string>
+    <string name="radar_off">Off</string>
+    <string name="radar_stop">Stop</string>
+    <string name="radar_track">Track</string>
+    <string name="radar_tx_base">TX Base: </string>
+
+    <!-- SSTV screen -->
+    <string name="sstv_grant_permission">Grant permission</string>
+    <string name="sstv_image_saved">Image saved</string>
+    <string name="sstv_image_save_failed">Failed to save image</string>
+    <string name="sstv_storage_permission_denied">Storage permission is required to save images. If denied permanently, enable it in app settings.</string>
+    <string name="sstv_listening">Listening…</string>
+    <string name="sstv_mic_permission">Microphone access needed</string>
+    <string name="sstv_mode_format">Mode: %s</string>
+    <string name="sstv_mode_title">SSTV Mode</string>
+    <string name="sstv_no_signal">No signal</string>
+    <string name="sstv_no_transceiver">No transceiver selected</string>
+    <string name="sstv_rx_format">RX: %s Hz</string>
+
+    <!-- Map screen -->
+    <string name="map_prev">Prev</string>
+    <string name="map_next">Next</string>
+    <string name="map_copyright" translatable="false">© OpenStreetMap contributors</string>
+    <string name="map_azimuth">Azimuth: %.1f°</string>
+    <string name="map_elevation">Elevation: %.1f°</string>
+    <string name="map_altitude">Altitude: %.0f km</string>
+    <string name="map_distance">Distance: %.0f km</string>
+    <string name="map_latitude">Latitude: %.1f°</string>
+    <string name="map_longitude">Longitude: %.1f°</string>
+    <string name="map_qth" translatable="false">QTH: %s</string>
+    <string name="map_phase">Phase: %.1f°</string>
+    <string name="map_eclipsed">Eclipsed</string>
+    <string name="map_period">Period: %.0f min</string>
+    <string name="map_velocity">Velocity: %.2f km/s</string>
+    <string name="map_visibility">Visibility: %s</string>
+    <string name="map_visible">Visible</string>
+
+    <!-- Settings screen -->
+    <string name="prefs_app_title" translatable="false">Look4Sat v%s</string>
+    <string name="prefs_app_url" translatable="false">https://play.google.com/store/apps/details?id=com.rtbishop.look4sat</string>
+    <string name="prefs_donate_title">Donate</string>
+    <string name="prefs_donate_url" translatable="false">https://ko-fi.com/rt_bishop</string>
+    <string name="prefs_fdroid_title" translatable="false">F-Droid</string>
+    <string name="prefs_fdroid_url" translatable="false">https://f-droid.org/en/packages/com.rtbishop.look4sat/</string>
+    <string name="prefs_github_title" translatable="false">GitHub</string>
+    <string name="prefs_github_url" translatable="false">https://github.com/rt-bishop/Look4Sat/</string>
+    <string name="prefs_license_title" translatable="false">GPLv3</string>
+    <string name="prefs_license_url" translatable="false">https://www.gnu.org/licenses/gpl-3.0.html</string>
+    <string name="prefs_privacy_title">Privacy Policy</string>
+    <string name="prefs_privacy_url" translatable="false">https://sites.google.com/view/look4sat-privacy-policy/home</string>
+
+    <string name="settings_paired_devices">Paired Bluetooth Devices:</string>
+    <string name="settings_split_mode">Split mode (IC-705 only)</string>
+    <string name="prefs_lat_prefix">Lat: %s°</string>
+    <string name="prefs_lon_prefix">Lon: %s°</string>
+    <string name="prefs_qth_prefix">Qth: %s</string>
+
+    <string name="prefs_updated_title">Updated: %s</string>
+    <string name="prefs_updated_time">d MMM yyyy - HH:mm:ss</string>
+
+    <string name="prefs_loc_title">Station position</string>
+    <string name="prefs_loc_gps_title">GPS</string>
+    <string name="prefs_loc_gps_error">Check your location permissions</string>
+    <string name="prefs_loc_input_title">Input</string>
+    <string name="prefs_loc_input_error">Invalid location entered</string>
+    <string name="prefs_loc_qth_title">QTH</string>
+    <string name="prefs_loc_qth_error">Invalid QTH locator</string>
+    <string name="prefs_loc_success">Position updated successfully</string>
+    <string name="prefs_station_title">Station position</string>
+    <string name="prefs_station_lat_text">Station latitude</string>
+    <string name="prefs_station_lon_text">Station longitude</string>
+    <string name="prefs_locator_title">QTH locator</string>
+    <string name="prefs_locator_text">Set position via locator</string>
+
+    <string name="prefs_data_title">Satellite data</string>
+    <string name="prefs_data_entries">Satellites: %s</string>
+    <string name="prefs_data_radios">Transceivers: %s</string>
+    <string name="prefs_data_update">Update</string>
+    <string name="prefs_data_import">Import</string>
+    <string name="prefs_data_clear">Clear</string>
+    <string name="prefs_data_clear_success">Data was cleared successfully</string>
+    <string name="prefs_data_update_success">Update completed successfully</string>
+    <string name="prefs_data_import_satellites_error">No satellites imported. Select a valid TLE/3LE (.txt) or OMM (.csv) file.</string>
+    <string name="prefs_data_import_transceivers_error">No transceivers imported. Select a valid SatNOGS (.json) file.</string>
+
+    <string name="prefs_data_sources_title">Data sources</string>
+    <string name="prefs_data_sources_restore">Restore default sources</string>
+    <string name="prefs_data_sources_sat_title">Satellites data</string>
+    <string name="prefs_data_sources_transceivers_title">Transceivers data</string>
+    <string name="prefs_data_sources_sat_hint">Top priority affects satellite names</string>
+    <string name="prefs_data_sources_transceivers_hint">Top priority affects transceivers data</string>
+
+    <string name="prefs_data_output_title">Data output</string>
+    <string name="prefs_net_output">Network</string>
+    <string name="prefs_bt_output">Bluetooth</string>
+    <string name="prefs_cat_output">CAT</string>
+
+    <!-- Radio Control -->
+    <string name="nav_radiocontrol">Radio Control</string>
+    <string name="rc_settings_title">CAT control</string>
+    <string name="rc_radio_model">Radio Model</string>
+    <string name="rc_tx_device_hint">TX BT address</string>
+    <string name="rc_rx_device_hint">RX BT address</string>
+    <string name="rc_tx_name_hint">TX Radio Name</string>
+    <string name="rc_rx_name_hint">RX Radio Name</string>
+    <string name="rc_enable_switch">Enable CAT</string>
+
+    <string name="prefs_net_title">Network output</string>
+    <string name="prefs_net_rotator_switch">Enable rotation output</string>
+    <string name="prefs_net_rotator_address_hint">IP:Port</string>
+    <string name="prefs_net_rotator_format_hint">Format</string>
+    <string name="prefs_net_frequency_switch">Enable frequency output</string>
+    <string name="prefs_net_frequency_address_hint">IP:Port</string>
+    <string name="prefs_net_frequency_format_hint">Format</string>
+    <string name="prefs_net_frequency_offset_hint" translatable="false">Frequency offset (Hz)</string>
+    <string name="prefs_net_frequency_offset_help" translatable="false">Range: -50000 to 50000 Hz. Positive values increase reported frequency; negative values decrease it.</string>
+
+    <string name="prefs_bt_title">Bluetooth output</string>
+    <string name="prefs_bt_rotator_switch">Enable rotation output</string>
+    <string name="prefs_bt_rotator_device_hint">Device ID</string>
+    <string name="prefs_bt_rotator_output_hint">Format</string>
+    <string name="prefs_bt_frequency_switch">Enable frequency output</string>
+    <string name="prefs_bt_frequency_device_hint">Device ID</string>
+    <string name="prefs_bt_frequency_output_hint">Format</string>
+    <string name="prefs_bt_perm_error">Check your bluetooth permission</string>
+    <string name="prefs_net_perm_error">Check your network permission</string>
+
+    <string name="prefs_other_title">Other</string>
+    <string name="prefs_other_switch_utc">UTC time</string>
+    <string name="prefs_other_switch_update">Auto-update</string>
+    <string name="prefs_other_switch_sweep">Radar sweep</string>
+    <string name="prefs_other_switch_sensors">Sensors</string>
+    <string name="prefs_other_switch_night_mode">Night filter</string>
+    <string name="prefs_other_switch_light_theme">Light theme</string>
+    <string name="prefs_other_compass_offset_az">Compass offset (azimuth)</string>
+    <string name="prefs_other_compass_offset_elev">Compass offset (elevation)</string>
+
+    <string name="prefs_highlight_title">Elevation highlight</string>
+    <string name="prefs_highlight_low">Low &lt; %1$d°</string>
+    <string name="prefs_highlight_mid">Mid %1$d–%2$d°</string>
+    <string name="prefs_highlight_high">High &gt; %1$d°</string>
+
+    <string name="prefs_outro_title">I would like to say thanks to</string>
+    <string name="prefs_outro_thanks" translatable="false">
+        * Look4Sat users and contributors!
+        \n* Jill Kamperides (Look4Sat-rPi)
+        \n* David A. B. Johnson (predict4java)
+        \n* Dave Moten (predict4java)
+        \n* Alexandru Csete (Gpredict)
+        \n* Dr T.S. Kelso (Celestrak)
+        \n* Libre Space Foundation (SatNOGS)
+        \n* xdsopl and Robot36 contributors!
+    </string>
+    <string name="prefs_outro_license">The app comes with no warranty</string>
+
+    <!-- Main screen -->
+    <string name="tracking_format">Tracking: %s</string>
+
+</resources>

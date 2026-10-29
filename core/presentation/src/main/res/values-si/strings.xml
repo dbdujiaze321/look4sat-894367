@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Commmon -->
+    <string name="btn_accept">පිළිගන්න</string>
+    <string name="btn_cancel">අවලංගු ක°</string>
+    <string name="empty_list_message">පෙන්වීමට දත්ත නැත</string>
+
+    <!-- Navigation -->
+    <string name="nav_sat">චන්ද්‍රිකා</string>
+    <string name="nav_pass">පසුකර යෑම්</string>
+    <string name="nav_radar">රේඩාර්</string>
+    <string name="nav_map">සිතියම</string>
+    <string name="nav_prefs">පසුතල</string>
+
+    <!-- Satellites screen -->
+    <string name="sat_type_hint">මාදිලි: %s</string>
+    <string name="sat_type_title">මාදිලි තෝරන්න</string>
+    <string name="sat_search_hint">Id - නම</string>
+    <string name="sat_search_clear">පිරිසිදු ක°</string>
+    <string name="sat_clear_all">සියල්ල පිරිසිදු ක°</string>
+    <string name="sat_select_all">සියල්ල තෝරන්න</string>
+    <string name="sat_group_selected">තෝරාගත්</string>
+    <string name="sat_group_available">තිබෙන</string>
+    <string name="sat_group_selected_count">තෝරාගත් (%1$d)</string>
+    <string name="sat_group_available_count">තිබෙන (%1$d)</string>
+    <string name="sat_empty_list_message">
+        ඔබගේ සෙවුම් විමසුම නිවැරදි බවත් දත්ත සමුදාය යාවත්කාලීන කර ඇති බවත් සහතික කර ගන්න</string>
+    <string name="sat_warning_title">අවවාදයයි\!</string>
+    <string name="sat_warning_message">
+        මෙම යෙදුමේ ලැයිස්තුගත කර ඇති චන්ද්‍රිකා 9000 කට වඩා තිබේ.
+        ඒවා සියල්ලම එකවර නිරීක්ෂණය කිරීම තේරුමක් නැති දෙයක්.
+        \n\nසෙවීම සහ මාදිලි තේරීම හරහා ඔබ උනන්දුවක් දක්වන
+        ඒවාට පමණක් ලැයිස්තුව පටු කිරීමට සැමවිටම උත්සාහ කරන්න.</string>
+
+    <!-- Passes screen -->
+    <string name="pass_filter_title">පසුකිරිම් පිරිපහදුව</string>
+    <string name="pass_filter_elev">අවම උත්තෝලනය</string>
+    <string name="pass_filter_hours">ඉදිරි කාලය</string>
+    <string name="pass_filter_aos_time">AOS කවුළුව</string>
+    <string name="pass_filter_invert_time">AOS කවුළුව ප්‍රතිවිරුද්ධ කරන්න</string>
+    <string name="pass_filter_deep_space">DeepSpace (කාලය &gt;225min)</string>
+    <string name="pass_modes_title">මූර්ජන තෝරන්න</string>
+    <string name="pass_elevation">උත්තෝලනය: %.1f°</string>
+    <string name="pass_altitude">උන්නතාශය: %d km</string>
+    <string name="pass_empty_list_message">
+        ඔබගේ පෙරහන් නිවැරදි බවත් ඔබ චන්ද්‍රිකා තෝරාගෙන ඇති බවත් සහතික කර ගන්න</string>
+    <string name="pass_error_message">ප්‍රදර්ශනය කිරීමට ඉදිරියට එන චන්ද්‍රිකා පසුකර යෑම් නැත.</string>
+    <string name="pass_welcome_title">Look4Sat වෙත සාදරයෙන් පිළිගනිමු\!</string>
+    <string name="pass_welcome_message">
+        සැකසුම් තුළ GPS, Lat/Lon හෝ QTH හරහා ඔබේ ස්ථානය සැකසීමට වග බලා ගන්න.
+        \n\nනිවැරදි අනාවැකි ලබා ගැනීම සඳහා අවම වශයෙන් සතිපතා දත්ත සමුදාය යාවත්කාලීන කරන්න.</string>
+
+    <!-- Radar screen -->
+    <string name="radar_back">ආපසු</string>
+    <string name="radar_notify">දන්වනවා</string>
+    <string name="radar_az_text">දිගංශය</string>
+    <string name="radar_el_text">උත්තෝලනය</string>
+    <string name="radar_alt_text">උන්නතාශය</string>
+    <string name="radar_dist_text">පරතරය</string>
+    <string name="radar_eclipsed">අදෘශ්‍ය</string>
+    <string name="radar_downlink">පහළ සබැඳිය</string>
+    <string name="radar_uplink">උඩුගත කිරීම</string>
+    <string name="radar_no_data">මෙම චන්ද්‍රිකාව සම්ප්‍රෙෂණය නොකරයි</string>
+    <string name="radar_add">එකතු ක°</string>
+    <string name="radar_data">චන්ද්‍රිකා සම්ප්‍රේෂණයන්:</string>
+    <string name="radar_inverted">Inverted: %s</string>
+    <string name="radar_mode">ප්‍රාකාරය: %s</string>
+    <string name="radar_string_no">නෑ</string>
+    <string name="radar_string_yes">ඔව්</string>
+    <string name="radar_visible">දෘශ්‍යමාන</string>
+
+    <!-- Map screen -->
+    <string name="map_prev">පසුපස</string>
+    <string name="map_next">ඊළග</string>
+    <string name="map_azimuth">දිගංශය: %.1f°</string>
+    <string name="map_elevation">උත්තෝලනය: %.1f°</string>
+    <string name="map_altitude">උන්නතාශය: %.0f km</string>,
+    <string name="map_distance">පරතරය: %.0f km</string>
+    <string name="map_latitude">අක්‍ෂාංශ: %.1f°</string>
+    <string name="map_longitude">දේශාංශ: %.1f°</string>
+    <string name="map_phase">අංශය: %.1f°</string>
+    <string name="map_eclipsed">අදෘශ්‍ය</string>
+    <string name="map_period">කාලය: %.0f min</string>
+    <string name="map_velocity">ප්‍රවේශය: %.2f km/s</string>
+    <string name="map_visibility">දෘශ්‍යතාව: %s</string>
+    <string name="map_visible">දෘශ්‍ය</string>
+
+    <!-- Settings screen -->
+    <string name="prefs_donate_title">දායකත්ව</string>
+    <string name="prefs_privacy_title">රහස්යතා ප්රතිපත්තිය</string>
+
+    <string name="prefs_updated_title">යාවත්කාලීන කරන ලදී: %s</string>
+    <string name="prefs_updated_time">d MMM yyyy - HH:mm:ss</string>
+
+    <string name="prefs_loc_title">පොළෙහි පිහිටීම</string>
+    <string name="prefs_loc_gps_title">GPS</string>
+    <string name="prefs_loc_gps_error">ඔබගේ location අවසර පරීක්ෂා ක°</string>
+    <string name="prefs_loc_input_title">ආදානය</string>
+    <string name="prefs_loc_input_error">ඇතුළත් කළ ස්ථානය වලංගු නොවේ</string>
+    <string name="prefs_loc_qth_title">QTH</string>
+    <string name="prefs_loc_qth_error">QTH locator වලංගු නොවේ</string>
+    <string name="prefs_loc_success">පිහිටීම යාවත්කාලීනය සාර්ථකයි</string>
+    <string name="prefs_station_title">පොළ පිහිටීම</string>
+    <string name="prefs_station_lat_text">පොළ අක්‍ෂාංශය</string>
+    <string name="prefs_station_lon_text">පොළ දේශාංශය</string>
+    <string name="prefs_locator_title">QTH locator</string>
+    <string name="prefs_locator_text">locator මඟින් පොළ පිහිටීම සකසන්න</string>
+
+    <string name="prefs_data_title">චන්ද්‍රිකා දත්ත</string>
+    <string name="prefs_data_entries">චන්ද්‍රිකා: %s</string>
+    <string name="prefs_data_radios">සම්ප්‍රෙේෂණය: %s</string>
+    <string name="prefs_data_update">නැවුම් කරන්න</string>
+    <string name="prefs_data_import">ආදානය</string>
+    <string name="prefs_data_clear">පිරිසිදු ක°</string>
+    <string name="prefs_data_clear_success">දත්ත ඉවත් කිරීම සාර්ථකයි</string>
+    <string name="prefs_data_update_success">යාවත්කාලීනය සම්පූර්ණ කිරීම සාර්ථකයි</string>
+    <string name="prefs_data_import_satellites_error">චන්ද්‍රිකා ආයාත නොවීය. වලංගු TLE/3LE (.txt) හෝ OMM (.csv) ගොනුවක් තෝරන්න.</string>
+    <string name="prefs_data_import_transceivers_error">සම්ප්‍රේෂක ආයාත නොවීය. වලංගු SatNOGS (.json) ගොනුවක් තෝරන්න.</string>
+
+    <string name="prefs_data_sources_title">අභිරුචි මූලාශ්‍ර</string>
+    <string name="prefs_data_sources_restore">පෙරනිමි මූලාශ්‍ර ප්‍රතිස්ථාපනය කරන්න</string>
+    <string name="prefs_data_sources_sat_title">චන්ද්‍රිකා දත්ත</string>
+    <string name="prefs_data_sources_transceivers_title">සම්ප්‍රේෂක දත්ත</string>
+    <string name="prefs_data_sources_sat_hint">ඉහළ ප්‍රමුඛතාව: චන්ද්‍රිකා නම්</string>
+    <string name="prefs_data_sources_transceivers_hint">ඉහළ ප්‍රමුඛතාව: සම්ප්‍රේෂක දත්ත</string>
+    <string name="prefs_data_sources_tle_switch">TLE URL</string>
+    <string name="prefs_data_sources_transceivers_switch">Transceivers URL</string>
+    <string name="prefs_data_sources_url_title" translatable="false">URL (HTTPS)</string>
+
+    <string name="prefs_data_output_title">දත්ත ප්‍රතිදානය</string>
+    <string name="prefs_net_output">ජාලය</string>
+    <string name="prefs_bt_output">Bluetooth</string>
+    <string name="prefs_cat_output">CAT</string>
+
+    <string name="nav_radiocontrol">රේඩියෝ පාලනය</string>
+    <string name="rc_settings_title">CAT පාලනය</string>
+    <string name="rc_radio_model">රේඩියෝ මාදිලිය</string>
+    <string name="rc_tx_device_hint">TX BT ලිපිනය</string>
+    <string name="rc_rx_device_hint">RX BT ලිපිනය</string>
+    <string name="rc_tx_name_hint">TX රේඩියෝ නම</string>
+    <string name="rc_rx_name_hint">RX රේඩියෝ නම</string>
+    <string name="rc_enable_switch">CAT සබල කරන්න</string>
+
+    <string name="prefs_net_title">ජාල ප්‍රතිදානය</string>
+    <string name="prefs_net_rotator_switch">Rotation ප්‍රතිදානය සබල කරන්න</string>
+    <string name="prefs_net_rotator_address_hint">IP:Port</string>
+    <string name="prefs_net_rotator_format_hint">දත්ත ආකෘතිය</string>
+    <string name="prefs_net_frequency_switch">Frequency ප්‍රතිදානය සබල කරන්න</string>
+    <string name="prefs_net_frequency_address_hint">IP:Port</string>
+    <string name="prefs_net_frequency_format_hint">දත්ත ආකෘතිය</string>
+
+    <string name="prefs_bt_title">Bluetooth ප්‍රතිදානය</string>
+    <string name="prefs_bt_rotator_switch">Rotation ප්‍රතිදානය සබල කරන්න</string>
+    <string name="prefs_bt_rotator_device_hint">උපාංග ID</string>
+    <string name="prefs_bt_rotator_output_hint">දත්ත ආකෘතිය</string>
+    <string name="prefs_bt_frequency_switch">Frequency ප්‍රතිදානය සබල කරන්න</string>
+    <string name="prefs_bt_frequency_device_hint">උපාංග ID</string>
+    <string name="prefs_bt_frequency_output_hint">දත්ත ආකෘතිය</string>
+    <string name="prefs_bt_perm_error">Bluetooth අවසර පරික්‍ෂා ක°</string>
+    <string name="prefs_net_perm_error">Network අවසර පරික්‍ෂා කරන්න</string>
+
+    <string name="prefs_other_title">වෙනත්</string>
+    <string name="prefs_other_switch_utc">UTC වේලාව</string>
+    <string name="prefs_other_switch_update">ස්වයං යාවත්කාලීන</string>
+    <string name="prefs_other_switch_sweep">රේඩාර් පරිලෝකනය</string>
+    <string name="prefs_other_switch_sensors">සංවේදක</string>
+    <string name="prefs_other_switch_night_mode">රාත්‍රී පෙරහන</string>
+    <string name="prefs_other_switch_light_theme">ආලෝක තේමාව</string>
+    <string name="prefs_other_compass_offset_az">මාලිමා අපගමනය (දිගංශය)</string>
+    <string name="prefs_other_compass_offset_elev">මාලිමා අපගමනය (උත්තෝලනය)</string>
+
+    <string name="prefs_highlight_title">උස් උද්දීපනය</string>
+    <string name="prefs_highlight_low">අඩු &lt; %1$d°</string>
+    <string name="prefs_highlight_mid">මධ්‍ය %1$d-%2$d°</string>
+    <string name="prefs_highlight_high">ඉහළ &gt; %1$d°</string>
+
+    <string name="prefs_outro_title">මම ස්තුති කිරීමට කැමති:</string>
+    <string name="prefs_outro_license">මෘදුකාංගය වගකීමක් සමග නොලැබේ</string>
+
+</resources>

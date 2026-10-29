@@ -1,0 +1,18 @@
+Track satellite passes with ease!
+
+Thanks to Celestrak and SatNOGS you have access to over 9000 active satellites.
+You can search the entire database by NORAD Catalog Number or the satellite's name.
+
+Orbital positions and passes are calculated relative to your location.
+To get reliable data make sure to set the station position via the app Settings.
+
+The application is built using Kotlin, Coroutines, Jetpack Compose and Navigation.
+It is now and always will be completely ad-free and open-source.
+
+<b>Main features:</b><ul>
+<li>Predicting satellite positions and passes for up to 10 days</li>
+<li>Showing the list of currently active and upcoming satellite passes</li>
+<li>Showing the active pass progress, polar trajectory and transceivers info</li>
+<li>Showing the satellite positional data, footprint and ground track on the map</li>
+<li>Custom TLE satellite data import is available via Three Line Element .txt files</li>
+<li>Offline first: calculations are made offline. Weekly TLE data update is recommended.</li></ul>
