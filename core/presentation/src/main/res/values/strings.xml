@@ -343,4 +343,12 @@
     <string name="cat_communication">Communication</string>
     <string name="cat_other">Other</string>
     <string name="prefs_outro_data" translatable="false"> Transmitter data: SatNOGS DB (https://db.satnogs.org), CC BY-SA 4.0, modified and cached locally.\nOrbital elements: CelesTrak (https://celestrak.org). </string>
+
+    <!-- Pass reminders -->
+    <string name="prefs_alarm_switch">Pass reminder</string>
+    <string name="prefs_alarm_lead">Remind before (min)</string>
+    <string name="pass_alarm_channel_name">Pass reminders</string>
+    <string name="pass_alarm_channel_desc">Alerts shortly before a satellite pass begins</string>
+    <string name="pass_alarm_title">%1$s in %2$s min</string>
+    <string name="pass_alarm_text">Max %1$s° · AOS %2$s</string>
 </resources>

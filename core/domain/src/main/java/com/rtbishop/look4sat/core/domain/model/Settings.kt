@@ -74,7 +74,11 @@ data class OtherSettings(
     /** Icon scale multiplier applied on top of the category icon base size. */
     val radarIconScale: Float = 1.0f,
     /** Satellite picker groups the list by purpose instead of selected/available only. */
-    val satellitesGrouped: Boolean = false
+    val satellitesGrouped: Boolean = false,
+    /** Arms a local alarm before the next pass so the radio is already on frequency. */
+    val passAlarmEnabled: Boolean = false,
+    /** How many minutes before AOS the reminder fires. */
+    val passAlarmLeadMinutes: Int = 10
 )
 
 /**

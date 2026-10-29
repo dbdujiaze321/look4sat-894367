@@ -139,6 +139,8 @@ class SettingsViewModel(
             is SettingsAction.ToggleRadarLabels -> settingsRepo.updateOtherSettings { it.copy(radarShowLabels = action.value) }
             is SettingsAction.SetRadarIconScale -> settingsRepo.updateOtherSettings { it.copy(radarIconScale = action.value) }
             is SettingsAction.ToggleSatellitesGrouped -> settingsRepo.updateOtherSettings { it.copy(satellitesGrouped = action.value) }
+            is SettingsAction.TogglePassAlarm -> settingsRepo.updateOtherSettings { it.copy(passAlarmEnabled = action.value) }
+            is SettingsAction.SetPassAlarmLead -> settingsRepo.updateOtherSettings { it.copy(passAlarmLeadMinutes = action.minutes) }
             // Remote control & data sources
             is SettingsAction.UpdateRC -> settingsRepo.updateRCSettings(action.settings)
             is SettingsAction.UpdateRadioControl -> settingsRepo.updateRadioControlSettings(action.settings)

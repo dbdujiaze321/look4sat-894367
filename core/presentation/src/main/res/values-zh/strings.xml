@@ -292,4 +292,12 @@
     <string name="cat_communication">通信</string>
     <string name="cat_other">其他</string>
     <string name="prefs_outro_data">转发器数据：SatNOGS DB（https://db.satnogs.org），CC BY-SA 4.0，经本地修改与缓存。\n轨道根数：CelesTrak（https://celestrak.org）。 </string>
+
+    <!-- Pass reminders -->
+    <string name="prefs_alarm_switch">过境提醒</string>
+    <string name="prefs_alarm_lead">提前分钟数</string>
+    <string name="pass_alarm_channel_name">过境提醒</string>
+    <string name="pass_alarm_channel_desc">在卫星过境开始前提醒</string>
+    <string name="pass_alarm_title">%1$s 将在 %2$s 分钟后过境</string>
+    <string name="pass_alarm_text">最高 %1$s° · AOS %2$s</string>
 </resources>

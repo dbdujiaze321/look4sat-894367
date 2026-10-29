@@ -75,6 +75,8 @@ sealed interface SettingsAction {
     data class ToggleRadarLabels(val value: Boolean) : SettingsAction
     data class SetRadarIconScale(val value: Float) : SettingsAction
     data class ToggleSatellitesGrouped(val value: Boolean) : SettingsAction
+    data class TogglePassAlarm(val value: Boolean) : SettingsAction
+    data class SetPassAlarmLead(val minutes: Int) : SettingsAction
 
     // Remote control
     data class UpdateRC(val settings: RCSettings) : SettingsAction

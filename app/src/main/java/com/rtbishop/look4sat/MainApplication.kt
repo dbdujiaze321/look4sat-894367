@@ -18,9 +18,11 @@
 package com.rtbishop.look4sat
 
 import android.app.Application
+import com.rtbishop.look4sat.alarm.PassAlarmScheduler
 import com.rtbishop.look4sat.core.data.injection.MainContainer
 import com.rtbishop.look4sat.core.domain.repository.IContainerProvider
 import com.rtbishop.look4sat.core.domain.repository.IMainContainer
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -35,10 +37,36 @@ class MainApplication : Application(), IContainerProvider {
     override fun onCreate() {
         super.onCreate()
         container = MainContainer(this)
+        PassAlarmScheduler.ensureChannel(this)
         // trigger automatic update every 48 hours
         container.appScope.launch { checkAutoUpdate() }
         // load satellite data on every app start
         container.appScope.launch { container.satelliteRepo.initRepository() }
+        watchPassAlarms()
+    }
+
+    /**
+     * Keeps exactly one pass reminder armed.
+     *
+     * Both inputs matter: the pass list changes when the selection or the filter changes, and the
+     * settings change when the user toggles the reminder or picks a different lead time. Collecting
+     * them together means the alarm is always rebuilt from the current state instead of drifting.
+     */
+    private fun watchPassAlarms() {
+        container.appScope.launch {
+            combine(
+                container.satelliteRepo.passes,
+                container.settingsRepo.otherSettings
+            ) { passes, settings -> passes to settings }
+                .collect { (passes, settings) ->
+                    PassAlarmScheduler.scheduleNext(
+                        context = this@MainApplication,
+                        passes = passes,
+                        leadMinutes = settings.passAlarmLeadMinutes,
+                        enabled = settings.passAlarmEnabled
+                    )
+                }
+        }
     }
 
     private suspend fun checkAutoUpdate(timeNow: Long = System.currentTimeMillis()) {

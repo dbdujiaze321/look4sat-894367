@@ -97,6 +97,14 @@ fun SettingsDestination() {
 @Composable
 private fun SettingsScreen(uiState: SettingsState, onAction: (SettingsAction) -> Unit) {
     val dialogs = rememberDialogVisibility()
+    // Android 13+ needs an explicit grant before a reminder can be posted at all.
+    val notificationPermission =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    val requestNotificationPermission: () -> Unit = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
     val permissions = rememberSettingsPermissions(
         sendAction = onAction,
         onBluetoothGranted = { dialogs.bluetooth = true },
@@ -293,7 +301,7 @@ private fun SettingsScreen(uiState: SettingsState, onAction: (SettingsAction) ->
                 )
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
-                AppearanceCard(uiState.otherSettings, onAction)
+                AppearanceCard(uiState.otherSettings, onAction, requestNotificationPermission)
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
                 if (isVerticalLayout) {
@@ -564,7 +572,7 @@ private fun AppearanceCardPreview() = MainTheme {
         shouldSeeWarning = false,
         shouldSeeWhatsNew = false
     )
-    AppearanceCard(values, {})
+    AppearanceCard(values, {}, {})
 }
 
 /**
@@ -577,6 +585,7 @@ private fun AppearanceCardPreview() = MainTheme {
 private fun AppearanceCard(
     settings: OtherSettings,
     onAction: (SettingsAction) -> Unit,
+    requestNotificationPermission: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
@@ -625,6 +634,27 @@ private fun AppearanceCard(
                 onValueChange = { onAction(SettingsAction.SetRadarIconScale(it)) },
                 valueRange = 0.6f..1.8f
             )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                SwitchTile(R.string.prefs_alarm_switch, settings.passAlarmEnabled) { checked ->
+                    if (checked) requestNotificationPermission()
+                    onAction(SettingsAction.TogglePassAlarm(checked))
+                }
+            }
+            if (settings.passAlarmEnabled) {
+                Text(
+                    text = stringResource(id = R.string.prefs_alarm_lead) +
+                        "  ${settings.passAlarmLeadMinutes}"
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(0, 5, 10, 15, 30).forEach { minutes ->
+                        FilterChip(
+                            selected = settings.passAlarmLeadMinutes == minutes,
+                            onClick = { onAction(SettingsAction.SetPassAlarmLead(minutes)) },
+                            label = { Text(text = "$minutes") }
+                        )
+                    }
+                }
+            }
         }
     }
 }

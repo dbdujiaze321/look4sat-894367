@@ -12,6 +12,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -42,6 +44,22 @@
 <!--                <data android:pathPattern="/rt-bishop/Look4Sat/passes.*" />-->
 <!--            </intent-filter>-->
         </activity>
+
+        <!-- Pass reminder: one alarm at a time, re-armed by the app whenever the pass list changes. -->
+        <receiver
+            android:name=".alarm.PassAlarmReceiver"
+            android:exported="false" />
+
+        <!-- Pending alarms do not survive a reboot or an update, so they are restored here. -->
+        <receiver
+            android:name=".alarm.BootReceiver"
+            android:directBootAware="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
         <meta-data
             android:name="android.telephony.PROPERTY_SATELLITE_DATA_OPTIMIZED"

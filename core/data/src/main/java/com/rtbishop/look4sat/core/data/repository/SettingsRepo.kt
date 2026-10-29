@@ -101,6 +101,8 @@ class SettingsRepo(
     private val keyRadarShowLabels = "radarShowLabels"
     private val keyRadarIconScale = "radarIconScale"
     private val keySatellitesGrouped = "satellitesGrouped"
+    private val keyPassAlarmEnabled = "passAlarmEnabled"
+    private val keyPassAlarmLeadMinutes = "passAlarmLeadMinutes"
     private val keySatellitesUrls = "satellitesUrls"
     private val keyTransceiversUrls = "transceiversUrls"
     private val keySatellitesUrlsEnabled = "satellitesUrlsEnabled"
@@ -376,6 +378,8 @@ class SettingsRepo(
                 putBoolean(keyRadarShowLabels, new.radarShowLabels)
                 putFloat(keyRadarIconScale, new.radarIconScale)
                 putBoolean(keySatellitesGrouped, new.satellitesGrouped)
+                putBoolean(keyPassAlarmEnabled, new.passAlarmEnabled)
+                putInt(keyPassAlarmLeadMinutes, new.passAlarmLeadMinutes)
             }
             new
         }
@@ -399,7 +403,9 @@ class SettingsRepo(
         radarIconStyle = RadarIconStyle.fromName(preferences.getString(keyRadarIconStyle, null)),
         radarShowLabels = preferences.getBoolean(keyRadarShowLabels, false),
         radarIconScale = preferences.getFloat(keyRadarIconScale, 1f).coerceIn(0.6f, 1.8f),
-        satellitesGrouped = preferences.getBoolean(keySatellitesGrouped, false)
+        satellitesGrouped = preferences.getBoolean(keySatellitesGrouped, false),
+        passAlarmEnabled = preferences.getBoolean(keyPassAlarmEnabled, false),
+        passAlarmLeadMinutes = preferences.getInt(keyPassAlarmLeadMinutes, 10).coerceIn(0, 120)
     )
     //endregion
 
