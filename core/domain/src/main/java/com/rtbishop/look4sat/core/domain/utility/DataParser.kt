@@ -49,11 +49,44 @@ class DataParser(private val dispatcher: CoroutineDispatcher) {
         }
     }
 
+    /**
+     * Parses a stream of three-line element sets.
+     *
+     * Scanning beats `chunked(3)` here because blank lines are ordinary in pasted text and in files
+     * with section headers: a single empty line shifts every block after it by one, and the old
+     * implementation silently dropped the rest of the file. A pair of element lines with no name
+     * line above it is skipped rather than given an invented name, so a truncated paste cannot
+     * produce a satellite called "1 25544U ...".
+     */
     suspend fun parseTLEStream(stream: InputStream): List<OrbitalData> = withContext(dispatcher) {
-        stream.bufferedReader().readLines()
-            .chunked(3)
-            .filter { it.size == 3 && it[1].startsWith("1") && it[2].startsWith("2") }
-            .mapNotNull { parseTLE(it) }
+        val lines = stream.bufferedReader().readLines().map { it.trimEnd() }.filter { it.isNotBlank() }
+        val entries = ArrayList<OrbitalData>(lines.size / 3)
+        var pendingName: String? = null
+        var index = 0
+        while (index < lines.size) {
+            val line = lines[index]
+            val next = lines.getOrNull(index + 1)
+            val isElementPair = next != null && line.startsWith("1") && next.startsWith("2")
+            when {
+                isElementPair && pendingName != null -> {
+                    parseTLE(listOf(pendingName, line, next))?.let(entries::add)
+                    pendingName = null
+                    index += 2
+                }
+                isElementPair -> {
+                    pendingName = null
+                    index += 2
+                }
+                // Orphan second line: skip it, but only when it really is one. A satellite
+                // called "2M-1" must still be usable as a name.
+                line.startsWith("2 ") && line.length > 50 -> index += 1
+                else -> {
+                    pendingName = line.trim().removePrefix("0 ").ifBlank { null }
+                    index += 1
+                }
+            }
+        }
+        entries
     }
 
     suspend fun parseJSONStream(stream: InputStream): List<SatRadio> = withContext(dispatcher) {
