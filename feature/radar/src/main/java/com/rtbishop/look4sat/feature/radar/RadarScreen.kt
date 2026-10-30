@@ -371,13 +371,21 @@ private fun SatelliteMiniCard(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(4.dp))
+            val aosDelta = pass.aosTime - now
+            val losDelta = pass.losTime - now
             Text(
-                text = stringResource(R.string.radar_mini_aos, countdown(pass.aosTime - now)),
+                text = stringResource(
+                    if (aosDelta >= 0) R.string.radar_mini_aos else R.string.radar_mini_aos_passed,
+                    countdown(aosDelta)
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = stringResource(R.string.radar_mini_los, countdown(pass.losTime - now)),
+                text = stringResource(
+                    if (losDelta >= 0) R.string.radar_mini_los else R.string.radar_mini_los_passed,
+                    countdown(losDelta)
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -396,7 +404,11 @@ private fun SatelliteMiniCard(
     }
 }
 
-/** mm:ss for short waits, h:mm:ss beyond an hour. */
+/**
+ * mm:ss for short waits, h:mm:ss beyond an hour. Always positive: the caller decides whether the
+ * value is a countdown or an elapsed time, because "in 6 minutes" and "6 minutes ago" are different
+ * sentences and the difference must survive translation.
+ */
 private fun countdown(millis: Long): String {
     val totalSeconds = kotlin.math.abs(millis) / 1000
     val hours = totalSeconds / 3600

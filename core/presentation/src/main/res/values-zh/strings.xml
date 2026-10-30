@@ -317,4 +317,7 @@
     <string name="prefs_radar_custom_pick">选择图片</string>
     <string name="prefs_radar_custom_clear">移除</string>
     <string name="prefs_radar_custom_failed">该图片无法使用（过大或无法读取）。</string>
+
+    <string name="radar_mini_aos_passed">AOS 已过 %1$s</string>
+    <string name="radar_mini_los_passed">LOS 已过 %1$s</string>
 </resources>

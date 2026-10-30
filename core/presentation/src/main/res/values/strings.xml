@@ -368,4 +368,7 @@
     <string name="prefs_radar_custom_pick">Choose image</string>
     <string name="prefs_radar_custom_clear">Remove</string>
     <string name="prefs_radar_custom_failed">That image cannot be used (too large or unreadable).</string>
+
+    <string name="radar_mini_aos_passed">AOS was %1$s ago</string>
+    <string name="radar_mini_los_passed">LOS was %1$s ago</string>
 </resources>

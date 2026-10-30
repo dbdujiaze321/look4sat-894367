@@ -23,6 +23,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -86,7 +87,7 @@ internal fun DrawScope.drawSatelliteIcon(
     rotate(degrees = rotationDeg, pivot = position) {
         translate(position.x, position.y) {
             val parts = satelliteParts(category, half)
-            val strokeWidth = (iconSizePx * 0.16f).coerceAtLeast(2.5f)
+            val strokeWidth = (iconSizePx * 0.13f).coerceAtLeast(2.5f)
             parts.forEach { part ->
                 if (style == RadarIconStyle.GLYPH) {
                     drawPath(part, palette.satellite)
@@ -105,43 +106,76 @@ internal fun DrawScope.drawSatelliteIcon(
  */
 private fun satelliteParts(category: SatelliteCategory, half: Float): List<Path> = when (category) {
     SatelliteCategory.SPACE_STATION -> listOf(
-        rectPath(-0.13f * half, -0.55f * half, 0.13f * half, 0.55f * half),
-        rectPath(-0.95f * half, -0.30f * half, -0.28f * half, 0.30f * half),
-        rectPath(0.28f * half, -0.30f * half, 0.95f * half, 0.30f * half),
-        rectPath(-0.30f * half, -0.10f * half, 0.30f * half, 0.10f * half)
+        // One merged silhouette. Drawing the parts as separate stroked rectangles made the icon
+        // read as a blob on a 1080p phone: the strokes of the overlapping parts crossed each other.
+        union(
+            rectPath(-0.14f * half, -0.55f * half, 0.14f * half, 0.55f * half),
+            rectPath(-0.42f * half, -0.09f * half, -0.14f * half, 0.09f * half),
+            rectPath(0.14f * half, -0.09f * half, 0.42f * half, 0.09f * half),
+            rectPath(-0.95f * half, -0.32f * half, -0.42f * half, 0.32f * half),
+            rectPath(0.42f * half, -0.32f * half, 0.95f * half, 0.32f * half)
+        )
     )
 
     SatelliteCategory.AMATEUR -> listOf(
-        rectPath(-0.45f * half, -0.20f * half, 0.45f * half, 0.40f * half),
-        rectPath(-0.06f * half, 0.40f * half, 0.06f * half, 0.95f * half),
-        circlePath(0f, -0.55f * half, 0.20f * half)
+        union(
+            rectPath(-0.45f * half, -0.16f * half, 0.45f * half, 0.42f * half),
+            rectPath(-0.07f * half, -0.62f * half, 0.07f * half, -0.16f * half),
+            circlePath(0f, -0.72f * half, 0.22f * half)
+        )
     )
 
     SatelliteCategory.WEATHER -> listOf(
-        circlePath(0f, 0f, 0.75f * half),
-        rectPath(-0.75f * half, -0.09f * half, 0.75f * half, 0.09f * half),
-        circlePath(0f, 0f, 0.22f * half)
+        union(
+            circlePath(0f, 0f, 0.78f * half),
+            rectPath(-0.78f * half, -0.10f * half, 0.78f * half, 0.10f * half)
+        ),
+        circlePath(0f, 0f, 0.24f * half)
     )
 
     SatelliteCategory.NAVIGATION -> listOf(
-        diamondPath(half * 0.85f),
-        rectPath(-0.08f * half, -0.55f * half, 0.08f * half, 0.55f * half)
+        union(
+            diamondPath(half * 0.86f),
+            rectPath(-0.09f * half, -0.55f * half, 0.09f * half, 0.55f * half)
+        )
     )
 
     SatelliteCategory.SCIENCE -> listOf(
-        hexagonPath(half * 0.8f),
-        rectPath(-0.85f * half, -0.07f * half, 0.85f * half, 0.07f * half)
+        union(
+            hexagonPath(half * 0.82f),
+            rectPath(-0.86f * half, -0.08f * half, 0.86f * half, 0.08f * half)
+        )
     )
 
     SatelliteCategory.COMMUNICATION -> listOf(
-        rectPath(-0.30f * half, -0.42f * half, 0.30f * half, 0.42f * half),
-        rectPath(-0.95f * half, -0.28f * half, -0.38f * half, 0.28f * half),
-        rectPath(0.38f * half, -0.28f * half, 0.95f * half, 0.28f * half)
+        union(
+            rectPath(-0.30f * half, -0.44f * half, 0.30f * half, 0.44f * half),
+            rectPath(-0.44f * half, -0.08f * half, -0.30f * half, 0.08f * half),
+            rectPath(0.30f * half, -0.08f * half, 0.44f * half, 0.08f * half),
+            rectPath(-0.95f * half, -0.30f * half, -0.44f * half, 0.30f * half),
+            rectPath(0.44f * half, -0.30f * half, 0.95f * half, 0.30f * half)
+        )
     )
 
     SatelliteCategory.OTHER -> listOf(
         rectPath(-0.62f * half, -0.62f * half, 0.62f * half, 0.62f * half)
     )
+}
+
+/**
+ * Merges overlapping primitives into a single contour.
+ *
+ * Without this, stroking a body rectangle and a panel rectangle that overlap draws both outlines
+ * through each other, which on a 26 dp marker looks like a blob rather than a satellite.
+ */
+private fun union(vararg parts: Path): Path {
+    var accumulator = parts.first()
+    for (index in 1 until parts.size) {
+        val merged = Path()
+        merged.op(accumulator, parts[index], PathOperation.Union)
+        accumulator = merged
+    }
+    return accumulator
 }
 
 private fun rectPath(left: Float, top: Float, right: Float, bottom: Float): Path = Path().apply {

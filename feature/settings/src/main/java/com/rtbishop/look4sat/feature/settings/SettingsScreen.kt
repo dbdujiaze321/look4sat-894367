@@ -644,10 +644,14 @@ private fun AppearanceCard(
                     }
                 }
             }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // One switch per row: side by side, the longer Chinese label ran underneath the
+            // neighbouring switch and the pair read as a single confused line on a 1080 px screen.
+            Row(modifier = Modifier.fillMaxWidth()) {
                 SwitchTile(R.string.prefs_radar_labels, settings.radarShowLabels) {
                     onAction(SettingsAction.ToggleRadarLabels(it))
                 }
+            }
+            Row(modifier = Modifier.fillMaxWidth()) {
                 SwitchTile(R.string.prefs_sat_grouped, settings.satellitesGrouped) {
                     onAction(SettingsAction.ToggleSatellitesGrouped(it))
                 }

@@ -67,6 +67,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
 
 class MainContainer(private val context: Context) : IMainContainer {
 
@@ -167,9 +168,20 @@ class MainContainer(private val context: Context) : IMainContainer {
         val userAgent = "Look4Sat/$version (+https://github.com/rt-bishop/Look4Sat)"
         // Data providers ask clients to identify themselves, so that they can reach out to the
         // developer instead of silently blocking every user of the app behind a misbehaving request
-        val client = OkHttpClient.Builder().addInterceptor { chain ->
-            chain.proceed(chain.request().newBuilder().header("User-Agent", userAgent).build())
-        }.build()
+        // OkHttp's defaults bound connect and each individual read, but not the call as a whole:
+        // a throttled link that trickles a byte every few seconds keeps resetting the read timer,
+        // and a stalled TLS read can block far longer than the UI is willing to show "updating".
+        // callTimeout is a hard ceiling that covers DNS, TLS and the whole body, so a blocked
+        // source always ends and the update falls back to the local cache instead of hanging.
+        val client = OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .callTimeout(45, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                chain.proceed(chain.request().newBuilder().header("User-Agent", userAgent).build())
+            }
+            .build()
         return RemoteSource(Dispatchers.IO, context.contentResolver, client)
     }
 
