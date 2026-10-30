@@ -38,6 +38,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.PathMeasure
@@ -96,6 +97,7 @@ fun RadarViewCompose(
     showLabel: Boolean = false,
     label: String = "",
     iconScale: Float = 1f,
+    customIcon: ImageBitmap? = null,
     onLongPressSatellite: () -> Unit = {}
 ) {
     val palette = LocalRadarPalette.current
@@ -219,7 +221,8 @@ fun RadarViewCompose(
                             style = iconStyle,
                             palette = palette,
                             haloRadiusPx = animScale,
-                            isEclipsed = item.eclipsed
+                            isEclipsed = item.eclipsed,
+                            customIcon = customIcon
                         )
                     }
                     if (showLabel && label.isNotEmpty()) {

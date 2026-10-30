@@ -22,6 +22,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.rtbishop.look4sat.core.domain.model.ThemeColor
+import com.rtbishop.look4sat.core.domain.model.ThemeOverrides
 import com.rtbishop.look4sat.core.domain.model.ThemePreset
 
 /**
@@ -117,18 +119,48 @@ val LocalRadarPalette = staticCompositionLocalOf { defaultDarkRadar }
 /** Default scheme, kept here so previews and the app share one definition. */
 fun baseColorScheme(isDarkTheme: Boolean): ColorScheme = if (isDarkTheme) baseDarkScheme else baseLightScheme
 
-/** Resolves the Material scheme for a preset. Presets are exact, not tinted from the default. */
-fun colorSchemeFor(preset: ThemePreset, isDarkTheme: Boolean): ColorScheme = when (preset) {
-    ThemePreset.DEFAULT -> baseColorScheme(isDarkTheme)
-    ThemePreset.HIGH_CONTRAST -> if (isDarkTheme) highContrastDarkScheme else highContrastLightScheme
-    ThemePreset.RED_NIGHT -> redNightScheme
+/** Hex to Compose colour, tolerant of malformed input coming from an imported theme file. */
+private fun String?.toColorOrNull(): Color? = ThemeColor.parse(this)?.let { Color(it) }
+
+/** Resolves the Material scheme for a preset, then layers any user overrides on top. */
+fun colorSchemeFor(
+    preset: ThemePreset,
+    isDarkTheme: Boolean,
+    overrides: ThemeOverrides = ThemeOverrides.EMPTY
+): ColorScheme {
+    val base = when (preset) {
+        ThemePreset.DEFAULT -> baseColorScheme(isDarkTheme)
+        ThemePreset.HIGH_CONTRAST -> if (isDarkTheme) highContrastDarkScheme else highContrastLightScheme
+        ThemePreset.RED_NIGHT -> redNightScheme
+    }
+    if (overrides.isEmpty()) return base
+    return base.copy(
+        primary = overrides.primary.toColorOrNull() ?: base.primary,
+        secondary = overrides.secondary.toColorOrNull() ?: base.secondary,
+        background = overrides.background.toColorOrNull() ?: base.background,
+        surface = overrides.surface.toColorOrNull() ?: base.surface
+    )
 }
 
-/** Resolves the radar tokens for a preset. */
-fun radarPaletteFor(preset: ThemePreset, isDarkTheme: Boolean): RadarPalette = when (preset) {
-    ThemePreset.DEFAULT -> if (isDarkTheme) defaultDarkRadar else defaultLightRadar
-    ThemePreset.HIGH_CONTRAST -> highContrastRadar
-    ThemePreset.RED_NIGHT -> redNightRadar
+/** Resolves the radar tokens for a preset, then layers any user overrides on top. */
+fun radarPaletteFor(
+    preset: ThemePreset,
+    isDarkTheme: Boolean,
+    overrides: ThemeOverrides = ThemeOverrides.EMPTY
+): RadarPalette {
+    val base = when (preset) {
+        ThemePreset.DEFAULT -> if (isDarkTheme) defaultDarkRadar else defaultLightRadar
+        ThemePreset.HIGH_CONTRAST -> highContrastRadar
+        ThemePreset.RED_NIGHT -> redNightRadar
+    }
+    if (overrides.isEmpty()) return base
+    return base.copy(
+        grid = overrides.radarGrid.toColorOrNull() ?: base.grid,
+        track = overrides.radarTrack.toColorOrNull() ?: base.track,
+        trackTrail = overrides.radarTrack.toColorOrNull() ?: base.trackTrail,
+        satellite = overrides.radarSatellite.toColorOrNull() ?: base.satellite,
+        satelliteOutline = overrides.radarSatellite.toColorOrNull() ?: base.satelliteOutline
+    )
 }
 
 private val highContrastDarkScheme = darkColorScheme(

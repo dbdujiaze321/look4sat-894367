@@ -44,11 +44,13 @@ enum class ThemePreset {
  * - [OUTLINE] draws a category specific contour, so a weather satellite reads differently from a
  *   space station at a glance without needing a legend.
  * - [GLYPH] draws a solid silhouette, which stays readable on a washed out outdoor screen.
+ * - [CUSTOM] draws a user supplied PNG; falls back to [OUTLINE] when no image is stored.
  */
 enum class RadarIconStyle {
     DOT,
     OUTLINE,
-    GLYPH;
+    GLYPH,
+    CUSTOM;
 
     companion object {
         fun fromName(name: String?): RadarIconStyle =

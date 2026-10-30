@@ -68,12 +68,14 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rtbishop.look4sat.core.domain.model.RadarIconStyle
 import com.rtbishop.look4sat.core.domain.model.SatRadio
 import com.rtbishop.look4sat.core.domain.predict.OrbitalPass
 import com.rtbishop.look4sat.core.domain.predict.OrbitalPos
 import com.rtbishop.look4sat.core.domain.repository.IContainerProvider
 import com.rtbishop.look4sat.core.domain.utility.DopplerFrequencyCalculator
 import com.rtbishop.look4sat.core.domain.utility.toDegrees
+import com.rtbishop.look4sat.core.presentation.CustomRadarIcon
 import com.rtbishop.look4sat.core.presentation.EmptyListCard
 import com.rtbishop.look4sat.core.presentation.IconCard
 import com.rtbishop.look4sat.core.presentation.NextPassRow
@@ -267,6 +269,12 @@ private fun RadarCard(uiState: RadarState, timeNow: StateFlow<Long>, modifier: M
     // Long pressing the marker opens a transient card; tapping it dismisses it again.
     var showMiniCard by remember { mutableStateOf(false) }
     val now by timeNow.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    // Decoded once per style change: decoding a PNG inside the draw block would allocate a bitmap
+    // on every animation frame.
+    val customIcon = remember(uiState.radarIconStyle) {
+        if (uiState.radarIconStyle == RadarIconStyle.CUSTOM) CustomRadarIcon.load(context) else null
+    }
     val shouldAnimateBorder = satellitePos?.aboveHorizon == true && satellitePos.eclipsed
     // Always call these composables unconditionally — conditional composable calls violate
     // Compose's slot-table stability rules and can crash or produce incorrect state
@@ -310,6 +318,7 @@ private fun RadarCard(uiState: RadarState, timeNow: StateFlow<Long>, modifier: M
                     showLabel = uiState.radarShowLabels,
                     label = uiState.satelliteLabel,
                     iconScale = uiState.radarIconScale,
+                    customIcon = customIcon,
                     onLongPressSatellite = { showMiniCard = true }
                 )
                 PositionOverlay(position)

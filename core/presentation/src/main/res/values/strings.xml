@@ -351,4 +351,21 @@
     <string name="pass_alarm_channel_desc">Alerts shortly before a satellite pass begins</string>
     <string name="pass_alarm_title">%1$s in %2$s min</string>
     <string name="pass_alarm_text">Max %1$s° · AOS %2$s</string>
+
+    <!-- Theme editor -->
+    <string name="prefs_theme_primary">Primary</string>
+    <string name="prefs_theme_background">Background</string>
+    <string name="prefs_theme_radar_track">Radar track</string>
+    <string name="prefs_theme_radius">Corner radius</string>
+    <string name="prefs_theme_export">Export</string>
+    <string name="prefs_theme_import">Import</string>
+    <string name="prefs_theme_reset">Reset all</string>
+    <string name="prefs_theme_pick">Pick a colour</string>
+    <string name="prefs_theme_use_preset">Use preset</string>
+    <string name="prefs_theme_import_failed">That file is not a Look4Sat theme.</string>
+
+    <string name="prefs_radar_icon_custom">Custom</string>
+    <string name="prefs_radar_custom_pick">Choose image</string>
+    <string name="prefs_radar_custom_clear">Remove</string>
+    <string name="prefs_radar_custom_failed">That image cannot be used (too large or unreadable).</string>
 </resources>

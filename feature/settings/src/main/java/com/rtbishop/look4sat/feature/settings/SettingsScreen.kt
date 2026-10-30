@@ -44,6 +44,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -72,6 +73,7 @@ import com.rtbishop.look4sat.core.domain.model.ThemePreset
 import com.rtbishop.look4sat.core.domain.predict.GeoPos
 import com.rtbishop.look4sat.core.domain.repository.IContainerProvider
 import com.rtbishop.look4sat.core.presentation.CardButton
+import com.rtbishop.look4sat.core.presentation.CustomRadarIcon
 import com.rtbishop.look4sat.core.presentation.IconCard
 import com.rtbishop.look4sat.core.presentation.MainTheme
 import com.rtbishop.look4sat.core.presentation.PrimaryIconCard
@@ -588,6 +590,16 @@ private fun AppearanceCard(
     requestNotificationPermission: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    var hasCustomIcon by remember { mutableStateOf(CustomRadarIcon.exists(context)) }
+    val pickCustomIcon = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            hasCustomIcon = CustomRadarIcon.save(context, uri)
+            if (!hasCustomIcon) {
+                onAction(SettingsAction.ShowToast(context.getString(R.string.prefs_radar_custom_failed)))
+            }
+        }
+    }
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -617,6 +629,21 @@ private fun AppearanceCard(
                     )
                 }
             }
+            if (settings.radarIconStyle == RadarIconStyle.CUSTOM) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    TextButton(onClick = { pickCustomIcon.launch("image/*") }) {
+                        Text(text = stringResource(R.string.prefs_radar_custom_pick))
+                    }
+                    if (hasCustomIcon) {
+                        TextButton(onClick = {
+                            CustomRadarIcon.clear(context)
+                            hasCustomIcon = false
+                        }) {
+                            Text(text = stringResource(R.string.prefs_radar_custom_clear))
+                        }
+                    }
+                }
+            }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SwitchTile(R.string.prefs_radar_labels, settings.radarShowLabels) {
                     onAction(SettingsAction.ToggleRadarLabels(it))
@@ -634,6 +661,7 @@ private fun AppearanceCard(
                 onValueChange = { onAction(SettingsAction.SetRadarIconScale(it)) },
                 valueRange = 0.6f..1.8f
             )
+            ThemeEditor(settings = settings, onAction = onAction)
             Row(modifier = Modifier.fillMaxWidth()) {
                 SwitchTile(R.string.prefs_alarm_switch, settings.passAlarmEnabled) { checked ->
                     if (checked) requestNotificationPermission()
@@ -669,6 +697,7 @@ private fun RadarIconStyle.labelRes(): Int = when (this) {
     RadarIconStyle.DOT -> R.string.prefs_radar_icon_dot
     RadarIconStyle.OUTLINE -> R.string.prefs_radar_icon_outline
     RadarIconStyle.GLYPH -> R.string.prefs_radar_icon_glyph
+    RadarIconStyle.CUSTOM -> R.string.prefs_radar_icon_custom
 }
 
 @Composable

@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import com.rtbishop.look4sat.core.domain.model.ThemeOverrides
 import com.rtbishop.look4sat.core.domain.model.ThemePreset
 
 val LocalSpacing = compositionLocalOf { Spacing }
@@ -61,14 +62,16 @@ data object Spacing {
 fun MainTheme(
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     preset: ThemePreset = ThemePreset.DEFAULT,
+    overrides: ThemeOverrides = ThemeOverrides.EMPTY,
     content: @Composable () -> Unit
 ) {
     val view = LocalView.current
-    val colorScheme = colorSchemeFor(preset, isDarkTheme)
-    val radarPalette = radarPaletteFor(preset, isDarkTheme)
+    val colorScheme = colorSchemeFor(preset, isDarkTheme, overrides)
+    val radarPalette = radarPaletteFor(preset, isDarkTheme, overrides)
+    val themeShapes = shapesFor(overrides.cornerRadius())
     if (view.isInEditMode) {
         CompositionLocalProvider(LocalRadarPalette provides radarPalette) {
-            MaterialTheme(colorScheme, shapes, typography, content)
+            MaterialTheme(colorScheme, themeShapes, typography, content)
         }
     } else {
         val useLightSystemBars = !isDarkTheme && preset != ThemePreset.RED_NIGHT
@@ -85,7 +88,7 @@ fun MainTheme(
                     window.isNavigationBarContrastEnforced = false
                 }
             }
-            MaterialTheme(colorScheme, shapes, typography, content)
+            MaterialTheme(colorScheme, themeShapes, typography, content)
         }
     }
 }
@@ -151,6 +154,19 @@ internal val baseDarkScheme = darkColorScheme(
     surfaceContainerLowest = Color(0xCC121212),
 //    surfaceDim = Color(0xFF121212),
 )
+
+/** Preset shapes, or the same proportions scaled to a user supplied corner radius. */
+private fun shapesFor(radiusDp: Int?): Shapes {
+    if (radiusDp == null) return shapes
+    val unit = radiusDp.dp
+    return Shapes(
+        extraSmall = RoundedCornerShape(unit * 0.33f),
+        small = RoundedCornerShape(unit * 0.67f),
+        medium = RoundedCornerShape(unit),
+        large = RoundedCornerShape(unit * 2f),
+        extraLarge = RoundedCornerShape(unit * 2.67f)
+    )
+}
 
 private val shapes = Shapes(
     extraSmall = RoundedCornerShape(4.dp), // menus, snackbars, text fields

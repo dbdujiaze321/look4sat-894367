@@ -141,6 +141,7 @@ class SettingsViewModel(
             is SettingsAction.ToggleSatellitesGrouped -> settingsRepo.updateOtherSettings { it.copy(satellitesGrouped = action.value) }
             is SettingsAction.TogglePassAlarm -> settingsRepo.updateOtherSettings { it.copy(passAlarmEnabled = action.value) }
             is SettingsAction.SetPassAlarmLead -> settingsRepo.updateOtherSettings { it.copy(passAlarmLeadMinutes = action.minutes) }
+            is SettingsAction.SetThemeJson -> settingsRepo.updateOtherSettings { it.copy(themeJson = action.json) }
             // Remote control & data sources
             is SettingsAction.UpdateRC -> settingsRepo.updateRCSettings(action.settings)
             is SettingsAction.UpdateRadioControl -> settingsRepo.updateRadioControlSettings(action.settings)

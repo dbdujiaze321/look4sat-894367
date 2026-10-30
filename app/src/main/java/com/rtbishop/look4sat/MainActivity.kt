@@ -31,6 +31,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
+import com.rtbishop.look4sat.core.domain.model.ThemeOverrides
 import com.rtbishop.look4sat.core.domain.repository.IContainerProvider
 import com.rtbishop.look4sat.core.presentation.MainTheme
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -55,7 +56,8 @@ class MainActivity : ComponentActivity() {
             val otherSettings by settingsRepo.otherSettings.collectAsState()
             MainTheme(
                 isDarkTheme = !otherSettings.stateOfLightTheme,
-                preset = otherSettings.themePreset
+                preset = otherSettings.themePreset,
+                overrides = ThemeOverrides.parse(otherSettings.themeJson)
             ) { NavRoot() }
         }
     }

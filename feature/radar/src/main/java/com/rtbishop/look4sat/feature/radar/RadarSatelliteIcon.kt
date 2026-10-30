@@ -20,8 +20,12 @@ package com.rtbishop.look4sat.feature.radar
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
@@ -46,7 +50,8 @@ internal fun DrawScope.drawSatelliteIcon(
     style: RadarIconStyle,
     palette: RadarPalette,
     haloRadiusPx: Float,
-    isEclipsed: Boolean
+    isEclipsed: Boolean,
+    customIcon: ImageBitmap? = null
 ) {
     if (style == RadarIconStyle.DOT) {
         drawCircle(palette.satellite, 16f, position)
@@ -57,6 +62,24 @@ internal fun DrawScope.drawSatelliteIcon(
     // The halo marks the satellite as lit; an eclipsed satellite gets none, same as upstream.
     if (!isEclipsed) {
         drawCircle(palette.satellite.copy(alpha = 0.18f), iconSizePx * 0.9f, position)
+    }
+
+    if (style == RadarIconStyle.CUSTOM && customIcon != null) {
+        // Drawn at 1.4x the vector size: a bitmap glyph reads smaller than a stroked contour at the
+        // same bounding box, because the contour carries empty space between its lines.
+        val side = (iconSizePx * 1.4f).roundToInt().coerceAtLeast(8)
+        rotate(degrees = rotationDeg, pivot = position) {
+            drawImage(
+                image = customIcon,
+                dstOffset = IntOffset(
+                    (position.x - side / 2f).roundToInt(),
+                    (position.y - side / 2f).roundToInt()
+                ),
+                dstSize = IntSize(side, side),
+                filterQuality = FilterQuality.Medium
+            )
+        }
+        return
     }
 
     val half = iconSizePx / 2f

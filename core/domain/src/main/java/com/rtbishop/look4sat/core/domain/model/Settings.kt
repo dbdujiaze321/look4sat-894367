@@ -78,7 +78,9 @@ data class OtherSettings(
     /** Arms a local alarm before the next pass so the radio is already on frequency. */
     val passAlarmEnabled: Boolean = false,
     /** How many minutes before AOS the reminder fires. */
-    val passAlarmLeadMinutes: Int = 10
+    val passAlarmLeadMinutes: Int = 10,
+    /** Serialised [ThemeOverrides]; empty means "preset only". */
+    val themeJson: String = ""
 )
 
 /**

@@ -300,4 +300,21 @@
     <string name="pass_alarm_channel_desc">在卫星过境开始前提醒</string>
     <string name="pass_alarm_title">%1$s 将在 %2$s 分钟后过境</string>
     <string name="pass_alarm_text">最高 %1$s° · AOS %2$s</string>
+
+    <!-- Theme editor -->
+    <string name="prefs_theme_primary">主色</string>
+    <string name="prefs_theme_background">背景</string>
+    <string name="prefs_theme_radar_track">雷达轨迹</string>
+    <string name="prefs_theme_radius">圆角半径</string>
+    <string name="prefs_theme_export">导出</string>
+    <string name="prefs_theme_import">导入</string>
+    <string name="prefs_theme_reset">全部重置</string>
+    <string name="prefs_theme_pick">选择颜色</string>
+    <string name="prefs_theme_use_preset">用预设值</string>
+    <string name="prefs_theme_import_failed">该文件不是 Look4Sat 主题文件。</string>
+
+    <string name="prefs_radar_icon_custom">自定义</string>
+    <string name="prefs_radar_custom_pick">选择图片</string>
+    <string name="prefs_radar_custom_clear">移除</string>
+    <string name="prefs_radar_custom_failed">该图片无法使用（过大或无法读取）。</string>
 </resources>
