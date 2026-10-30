@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -91,6 +92,10 @@ private fun WorkbenchScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            // The activity draws edge to edge, so the title would otherwise sit under the status
+            // bar. Every other screen gets this from ScreenColumn; the workbench has its own
+            // scroll container and has to apply the inset itself.
+            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = spacing.large, vertical = spacing.medium),
         verticalArrangement = Arrangement.spacedBy(spacing.medium)
