@@ -56,6 +56,7 @@ sealed interface SettingsAction {
     data class SaveStation(val name: String) : SettingsAction
     data class SelectStation(val id: String) : SettingsAction
     data class DeleteStation(val id: String) : SettingsAction
+    data class ImportTleText(val text: String, val errorMessage: String) : SettingsAction
     data object DismissPosMessages : SettingsAction
 
     // Data

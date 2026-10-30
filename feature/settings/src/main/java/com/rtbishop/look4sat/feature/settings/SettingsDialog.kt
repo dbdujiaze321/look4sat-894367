@@ -1054,3 +1054,48 @@ private fun StationRow(
         }
     }
 }
+
+
+/**
+ * Pastes element sets straight from a message or a web page.
+ *
+ * A TLE for a freshly launched satellite often exists nowhere else yet: it arrives on a mailing list
+ * or in a chat, and asking the user to save it to a file first is a step that exists only to satisfy
+ * the file picker.
+ */
+@Composable
+fun TlePasteDialog(dismiss: () -> Unit, onImport: (String) -> Unit) {
+    val spacing = LocalSpacing.current
+    val value = rememberSaveable { mutableStateOf("") }
+    ConfirmDialog(
+        title = stringResource(R.string.prefs_data_paste_title),
+        onCancel = dismiss,
+        onAccept = {
+            onImport(value.value)
+            dismiss()
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = spacing.large, vertical = spacing.small),
+            verticalArrangement = Arrangement.spacedBy(spacing.small)
+        ) {
+            OutlinedTextField(
+                value = value.value,
+                onValueChange = { value.value = it },
+                label = { Text(text = stringResource(R.string.prefs_data_paste_label)) },
+                minLines = 5,
+                maxLines = 8,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = stringResource(R.string.prefs_data_paste_hint),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(spacing.medium))
+        }
+    }
+}

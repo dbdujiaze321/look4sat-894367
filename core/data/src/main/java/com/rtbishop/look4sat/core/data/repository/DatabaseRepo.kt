@@ -58,6 +58,25 @@ class DatabaseRepo(
         importedCount
     }
 
+    /**
+     * Imports element sets from a string instead of a file.
+     *
+     * Same parsing and same merge rules as the file path, because a pasted TLE and a dropped .txt
+     * must behave identically: stale elements lose to fresher ones already in the database, and the
+     * message must say so rather than silently "succeed" with zero rows.
+     */
+    override suspend fun updateTLEFromText(text: String): Int = withContext(dispatcher) {
+        val parsed = dataParser.parseTLEStream(text.byteInputStream())
+        val entries = TleMergeEngine.merge(
+            listOf(TleSourceBatch("pasted", LOCAL_FILE_PRIORITY, parsed))
+        ).entries
+        if (entries.isNotEmpty()) {
+            insertFresherEntries(entries)
+            setUpdateSuccessful(System.currentTimeMillis())
+        }
+        entries.size
+    }
+
     override suspend fun updateTransceiversFromFile(uri: String): Int = withContext(dispatcher) {
         var importedCount = 0
         remoteSource.getFileStream(uri)?.let { stream ->

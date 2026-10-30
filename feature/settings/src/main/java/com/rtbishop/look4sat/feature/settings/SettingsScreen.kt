@@ -292,11 +292,17 @@ private fun SettingsScreen(uiState: SettingsState, onAction: (SettingsAction) ->
                 )
             }
             item {
+                // Resolved here: the import callback is not a composable scope, so stringResource
+                // cannot be called from inside it.
+                val pasteError = stringResource(R.string.prefs_data_paste_error)
                 DataCard(
                     settings = uiState.dataSettings,
                     updateFromWeb = { onAction(SettingsAction.UpdateFromWeb) },
                     clearAllData = { onAction(SettingsAction.ClearAllData) },
-                    showDataSourcesDialog = { dialogs.dataSources = true }
+                    showDataSourcesDialog = { dialogs.dataSources = true },
+                    onImportTle = { text ->
+                        onAction(SettingsAction.ImportTleText(text, pasteError))
+                    }
                 )
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -427,7 +433,13 @@ private fun LocationCard(
 @Composable
 private fun DataCardPreview() = MainTheme {
     val settings = DataSettings(true, 5000, 2500, 0L)
-    DataCard(settings = settings, updateFromWeb = {}, clearAllData = {}, showDataSourcesDialog = {})
+    DataCard(
+        settings = settings,
+        updateFromWeb = {},
+        clearAllData = {},
+        showDataSourcesDialog = {},
+        onImportTle = {}
+    )
 }
 
 @Composable
@@ -435,8 +447,10 @@ private fun DataCard(
     settings: DataSettings,
     updateFromWeb: () -> Unit,
     clearAllData: () -> Unit,
-    showDataSourcesDialog: () -> Unit
+    showDataSourcesDialog: () -> Unit,
+    onImportTle: (String) -> Unit
 ) {
+    var showPaste by remember { mutableStateOf(false) }
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -474,7 +488,15 @@ private fun DataCard(
                     modifier = Modifier.weight(1f)
                 )
             }
+            // Same reason as the saved sites: a fourth button would ellipsise the labels, so the
+            // paste path gets its own line.
+            TextButton(onClick = { showPaste = true }) {
+                Text(text = stringResource(id = R.string.prefs_data_paste), fontSize = 12.sp)
+            }
         }
+    }
+    if (showPaste) {
+        TlePasteDialog(dismiss = { showPaste = false }, onImport = onImportTle)
     }
 }
 

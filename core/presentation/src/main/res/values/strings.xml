@@ -434,4 +434,11 @@
 
     <string name="analysis_focus">Track only this satellite</string>
     <string name="analysis_focus_done">Selection reduced to this satellite</string>
+
+    <string name="prefs_data_paste">Paste TLE</string>
+    <string name="prefs_data_paste_title">Paste TLE text</string>
+    <string name="prefs_data_paste_label">Name line, then line 1 and line 2</string>
+    <string name="prefs_data_paste_hint">Three lines per satellite. Anything already known is kept if it is fresher.</string>
+    <string name="prefs_data_paste_error">No valid TLE found in that text.</string>
+    <string name="pass_export_calendar">Export calendar</string>
 </resources>

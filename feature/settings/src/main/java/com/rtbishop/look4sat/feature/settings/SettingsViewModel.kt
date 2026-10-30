@@ -127,6 +127,9 @@ class SettingsViewModel(
             is SettingsAction.UpdateTransceiversFromFile -> runManualImport(action.invalidFileMessage) {
                 databaseRepo.updateTransceiversFromFile(action.uri)
             }
+            is SettingsAction.ImportTleText -> runManualImport(action.errorMessage) {
+                databaseRepo.updateTLEFromText(action.text)
+            }
             SettingsAction.ClearAllData -> viewModelScope.launch { databaseRepo.clearAllData() }
             // Toggles
             is SettingsAction.ToggleUtc -> settingsRepo.updateOtherSettings { it.copy(stateOfUtc = action.value) }

@@ -19,6 +19,9 @@ package com.rtbishop.look4sat.core.domain.repository
 
 interface IDatabaseRepo {
     suspend fun updateTLEFromFile(uri: String): Int
+
+    /** Imports element sets pasted as text: the case where a satellite exists only in a message. */
+    suspend fun updateTLEFromText(text: String): Int
     suspend fun updateTransceiversFromFile(uri: String): Int
     suspend fun updateFromRemote()
     suspend fun clearAllData()

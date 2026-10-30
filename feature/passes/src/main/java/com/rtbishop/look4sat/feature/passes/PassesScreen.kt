@@ -42,6 +42,8 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -57,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rtbishop.look4sat.core.domain.analysis.PassIcs
 import com.rtbishop.look4sat.core.domain.predict.DeepSpaceObject
 import com.rtbishop.look4sat.core.domain.predict.NearEarthObject
 import com.rtbishop.look4sat.core.domain.predict.OrbitalData
@@ -91,7 +94,17 @@ fun PassesDestination(
     val container = (context.applicationContext as IContainerProvider).getMainContainer()
     val viewModel: PassesViewModel = viewModel(factory = PassesViewModel.factory(container))
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-    PassesScreen(uiState, viewModel.timeNow, viewModel::onAction, navigateToRadar, navigateToAnalysis)
+    // The calendar reminder reuses the alarm lead so the two never disagree about "10 minutes".
+    val reminderMinutes = container.settingsRepo.otherSettings
+        .collectAsStateWithLifecycle().value.passAlarmLeadMinutes
+    PassesScreen(
+        uiState = uiState,
+        timeNow = viewModel.timeNow,
+        onAction = viewModel::onAction,
+        navigateToRadar = navigateToRadar,
+        navigateToAnalysis = navigateToAnalysis,
+        reminderMinutes = reminderMinutes
+    )
 }
 
 @Composable
@@ -100,8 +113,21 @@ private fun PassesScreen(
     timeNow: StateFlow<Long>,
     onAction: (PassesAction) -> Unit,
     navigateToRadar: (Int, Long) -> Unit,
-    navigateToAnalysis: (Int, Long) -> Unit
+    navigateToAnalysis: (Int, Long) -> Unit,
+    reminderMinutes: Int
 ) {
+    val context = LocalContext.current
+    // Everything currently visible, in list order: exporting the filtered list is what the filter
+    // dialog already promises, so a separate selection step would be redundant.
+    val icsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/calendar")
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val payload = PassIcs.build(uiState.itemsList, reminderMinutes = reminderMinutes)
+        runCatching {
+            context.contentResolver.openOutputStream(uri)?.use { it.write(payload.toByteArray()) }
+        }
+    }
     if (uiState.isPassesDialogShown) {
         PassesFilterDialog(
             hours = uiState.hours,
@@ -158,7 +184,20 @@ private fun PassesScreen(
                     NextPassRow(pass = uiState.nextPass, timeNow = timeNow)
                 },
                 endAction = {
-                    IconCard(action = { onAction(PassesAction.TogglePassesDialog) }, resId = R.drawable.ic_filter)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        IconCard(
+                            action = {
+                                if (uiState.itemsList.isNotEmpty()) {
+                                    icsLauncher.launch(PassIcs.fileName(uiState.itemsList))
+                                }
+                            },
+                            resId = R.drawable.ic_calendar
+                        )
+                        IconCard(
+                            action = { onAction(PassesAction.TogglePassesDialog) },
+                            resId = R.drawable.ic_filter
+                        )
+                    }
                 }
             )
         }
