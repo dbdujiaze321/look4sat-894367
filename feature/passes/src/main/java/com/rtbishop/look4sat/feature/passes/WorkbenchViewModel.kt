@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.rtbishop.look4sat.core.domain.analysis.PassStatistics
 import com.rtbishop.look4sat.core.domain.model.DatabaseState
 import com.rtbishop.look4sat.core.domain.predict.OrbitalPass
 import com.rtbishop.look4sat.core.domain.repository.IDatabaseRepo
@@ -50,7 +51,8 @@ data class WorkbenchState(
     val daysUntilStale: Int? = null,
     val highPrecisionDaysLeft: Double? = null,
     val isRefreshing: Boolean = false,
-    val message: String? = null
+    val message: String? = null,
+    val statistics: PassStatistics? = null
 )
 
 class WorkbenchViewModel(
@@ -64,11 +66,15 @@ class WorkbenchViewModel(
 
     private var passes: List<OrbitalPass> = emptyList()
     private var databaseState: DatabaseState? = null
+    // Recomputed only when the pass list changes. The one-second ticker must not re-aggregate
+    // several hundred passes just to repaint an unchanged number.
+    private var statistics: PassStatistics? = null
 
     init {
         viewModelScope.launch {
             satelliteRepo.passes.collect {
                 passes = it
+                statistics = PassStatistics.from(it)
                 refreshDerived()
             }
         }
@@ -147,7 +153,8 @@ class WorkbenchViewModel(
                 countdown = next?.let { pass -> formatCountdown(pass.aosTime - now) } ?: "--:--:--",
                 dataAgeDays = ageDays,
                 daysUntilStale = untilStale,
-                highPrecisionDaysLeft = highPrecisionLeft
+                highPrecisionDaysLeft = highPrecisionLeft,
+                statistics = statistics
             )
         }
     }

@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rtbishop.look4sat.core.domain.analysis.PassStatistics
 import com.rtbishop.look4sat.core.domain.predict.OrbitalPass
 import com.rtbishop.look4sat.core.domain.repository.IContainerProvider
 import com.rtbishop.look4sat.core.presentation.LocalSpacing
@@ -117,6 +118,7 @@ private fun WorkbenchScreen(
 
         NextPassCard(state = state, onOpenPassDetail = onOpenPassDetail)
         DataFreshnessCard(state = state, onRefresh = onRefresh)
+        state.statistics?.takeIf { it.passCount > 0 }?.let { WindowStatsCard(it) }
 
         Text(
             text = stringResource(R.string.workbench_best_passes),
@@ -291,3 +293,72 @@ private fun PassRow(pass: OrbitalPass, onClick: () -> Unit) {
 
 private fun formatTime(millis: Long): String =
     SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(millis))
+
+/**
+ * What the current filter actually bought: how many passes, how much observing time, across how many
+ * satellites. The pass list shows each event but never the total, and "12 passes" sounds very
+ * different from "12 passes, 41 minutes of air time".
+ */
+@Composable
+private fun WindowStatsCard(statistics: PassStatistics) {
+    val spacing = LocalSpacing.current
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+    ) {
+        Column(
+            modifier = Modifier.padding(spacing.large),
+            verticalArrangement = Arrangement.spacedBy(spacing.small)
+        ) {
+            Text(
+                text = stringResource(R.string.workbench_stats_title),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing.medium)
+            ) {
+                StatCell(
+                    value = statistics.passCount.toString(),
+                    label = stringResource(R.string.workbench_stats_passes),
+                    modifier = Modifier.weight(1f)
+                )
+                StatCell(
+                    value = formatVisible(statistics.visibleSeconds),
+                    label = stringResource(R.string.workbench_stats_visible),
+                    modifier = Modifier.weight(1f)
+                )
+                StatCell(
+                    value = statistics.satelliteCount.toString(),
+                    label = stringResource(R.string.workbench_stats_satellites),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatCell(value: String, label: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+/** Hours and minutes only: seconds are noise at this aggregate. */
+private fun formatVisible(seconds: Long): String {
+    val hours = seconds / 3600
+    val minutes = (seconds % 3600) / 60
+    return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+}

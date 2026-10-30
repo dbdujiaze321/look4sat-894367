@@ -371,4 +371,56 @@
 
     <string name="radar_mini_aos_passed">AOS was %1$s ago</string>
     <string name="radar_mini_los_passed">LOS was %1$s ago</string>
+
+    <!-- Pass analysis -->
+    <string name="analysis_title">Pass analysis</string>
+    <string name="analysis_geometry">Pass geometry</string>
+    <string name="analysis_orbit">Orbital elements</string>
+    <string name="analysis_elevation">Elevation profile</string>
+    <string name="analysis_doppler">Doppler plan</string>
+    <string name="analysis_sky">Sky track</string>
+    <string name="analysis_samples">Samples</string>
+    <string name="analysis_stats">This satellite</string>
+    <string name="analysis_export">Export CSV</string>
+    <string name="analysis_missing">This pass is no longer in the current list. It may have expired, or the filter changed.</string>
+    <string name="analysis_aos">AOS</string>
+    <string name="analysis_los">LOS</string>
+    <string name="analysis_tca">TCA</string>
+    <string name="analysis_duration">Duration</string>
+    <string name="analysis_max_elev">Max elevation</string>
+    <string name="analysis_az_tca">Azimuth at TCA</string>
+    <string name="analysis_min_range">Min range</string>
+    <string name="analysis_peak_rate">Peak range rate</string>
+    <string name="analysis_sweep">Azimuth sweep</string>
+    <string name="analysis_sunlit">Sunlit</string>
+    <string name="analysis_period">Period</string>
+    <string name="analysis_revs">Revs/day</string>
+    <string name="analysis_perigee">Perigee alt.</string>
+    <string name="analysis_apogee">Apogee alt.</string>
+    <string name="analysis_incl">Inclination</string>
+    <string name="analysis_ecc">Eccentricity</string>
+    <string name="analysis_node">Node drift</string>
+    <string name="analysis_apsis">Apsis drift</string>
+    <string name="analysis_age">Element age</string>
+    <string name="analysis_freshness">Freshness</string>
+    <string name="analysis_fresh_fresh">fresh</string>
+    <string name="analysis_fresh_good">good</string>
+    <string name="analysis_fresh_usable">usable</string>
+    <string name="analysis_fresh_stale">stale</string>
+    <string name="analysis_no_radios">No transceiver data for this satellite.</string>
+    <string name="analysis_peak_doppler">Peak Doppler</string>
+    <string name="analysis_pass_count">Passes</string>
+    <string name="analysis_visible_total">Total visible</string>
+    <string name="analysis_median_elev">Median max el.</string>
+    <string name="analysis_best_elev">Best elevation</string>
+    <string name="analysis_class_leo">LEO</string>
+    <string name="analysis_class_meo">MEO</string>
+    <string name="analysis_class_geo">GEO</string>
+    <string name="analysis_class_heo">HEO</string>
+    <string name="analysis_samples_hint">Rows are sampled evenly. The CSV export contains every point.</string>
+
+    <string name="workbench_stats_title">Current window</string>
+    <string name="workbench_stats_passes">passes</string>
+    <string name="workbench_stats_visible">visible</string>
+    <string name="workbench_stats_satellites">satellites</string>
 </resources>

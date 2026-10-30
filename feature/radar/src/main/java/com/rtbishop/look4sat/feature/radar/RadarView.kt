@@ -193,6 +193,11 @@ fun RadarViewCompose(
             cachedSweepBrush = makeSweepBrush(center, palette.sweep)
             cachedSweepColor = palette.sweep
         }
+        // The catalogue number is drawn in screen space, after the rotation block, so it stays
+        // horizontal and readable while the icon itself turns with the ground track.
+        val iconLocal = polarOffset(item.azimuth, item.elevation, radius, elevationSpan)
+        val iconScreen = iconLocal.rotateDegrees(rotation) + center
+        val iconSizePx = 26.dp.toPx() * iconScale
         rotate(rotation) {
             if (shouldShowSweep) {
                 cachedSweepBrush?.let { drawSweep(center, sweepDegrees, radius, it) }
@@ -202,7 +207,7 @@ fun RadarViewCompose(
             translate(center.x, center.y) {
                 drawTrack(trackPath, trackEffect, palette.track, palette.trackTrail)
                 if (item.elevation > 0) {
-                    val iconSize = 26.dp.toPx() * iconScale
+                    val iconSize = iconSizePx
                     val angle = motionAngleDegrees(item, items) { pos ->
                         polarOffset(pos.azimuth, pos.elevation, radius, elevationSpan)
                     }
@@ -225,9 +230,6 @@ fun RadarViewCompose(
                             customIcon = customIcon
                         )
                     }
-                    if (showLabel && label.isNotEmpty()) {
-                        drawSatelliteLabel(position, iconSize, label, palette.satelliteLabel, measurer)
-                    }
                 }
                 sunPosition?.let { sun ->
                     if (sun.elevation > 0) drawBodyIcon(sun.azimuth, sun.elevation, radius, elevationSpan, palette.sun, sunPainter, 52f)
@@ -247,6 +249,9 @@ fun RadarViewCompose(
                 }
                 if (shouldUseCompass) drawAim(azimElev.first, azimElev.second, radius, elevationSpan, palette.aim)
             }
+        }
+        if (showLabel && label.isNotEmpty() && item.elevation > 0) {
+            drawSatelliteLabel(iconScreen, iconSizePx, label, palette.satelliteLabel, measurer)
         }
     }
 }

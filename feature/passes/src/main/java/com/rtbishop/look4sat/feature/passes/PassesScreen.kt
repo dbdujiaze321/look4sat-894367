@@ -20,6 +20,7 @@ package com.rtbishop.look4sat.feature.passes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -82,12 +83,15 @@ import java.util.Date
 import java.util.TimeZone
 
 @Composable
-fun PassesDestination(navigateToRadar: (Int, Long) -> Unit) {
+fun PassesDestination(
+    navigateToRadar: (Int, Long) -> Unit,
+    navigateToAnalysis: (Int, Long) -> Unit = { _, _ -> }
+) {
     val context = LocalContext.current
     val container = (context.applicationContext as IContainerProvider).getMainContainer()
     val viewModel: PassesViewModel = viewModel(factory = PassesViewModel.factory(container))
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-    PassesScreen(uiState, viewModel.timeNow, viewModel::onAction, navigateToRadar)
+    PassesScreen(uiState, viewModel.timeNow, viewModel::onAction, navigateToRadar, navigateToAnalysis)
 }
 
 @Composable
@@ -95,7 +99,8 @@ private fun PassesScreen(
     uiState: PassesState,
     timeNow: StateFlow<Long>,
     onAction: (PassesAction) -> Unit,
-    navigateToRadar: (Int, Long) -> Unit
+    navigateToRadar: (Int, Long) -> Unit,
+    navigateToAnalysis: (Int, Long) -> Unit
 ) {
     if (uiState.isPassesDialogShown) {
         PassesFilterDialog(
@@ -167,6 +172,7 @@ private fun PassesScreen(
             isSearching = uiState.searchQuery.isNotBlank(),
             timeNow = timeNow,
             navigateToRadar = navigateToRadar,
+            navigateToAnalysis = navigateToAnalysis,
             onAction = onAction
         )
     }
@@ -182,6 +188,7 @@ private fun PassesList(
     isSearching: Boolean,
     timeNow: StateFlow<Long>,
     navigateToRadar: (Int, Long) -> Unit,
+    navigateToAnalysis: (Int, Long) -> Unit,
     onAction: (PassesAction) -> Unit
 ) {
     val isVerticalLayout = isVerticalLayout()
@@ -219,6 +226,7 @@ private fun PassesList(
                             PassItem(
                                 pass = pass,
                                 navigateToRadar = navigateToRadar,
+                                navigateToAnalysis = navigateToAnalysis,
                                 timeNow = timeNow,
                                 modifier = Modifier.animateItem(),
                                 isVerticalLayout = isVerticalLayout,
@@ -314,6 +322,7 @@ private fun PassItem(
     pass: OrbitalPass,
     navigateToRadar: (Int, Long) -> Unit,
     timeNow: StateFlow<Long>,
+    navigateToAnalysis: (Int, Long) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
     isVerticalLayout: Boolean = true,
     isUtc: Boolean = false
@@ -367,6 +376,21 @@ private fun PassItem(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 PassTimerChip(pass = pass, timeNow = timeNow)
+                // A second, explicit target: the row itself opens the radar, which is the right
+                // default for "watch this pass", while the chart opens the numbers behind it.
+                Box(
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .clickable { navigateToAnalysis(pass.catNum, pass.aosTime) }
+                        .padding(2.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_analysis),
+                        contentDescription = stringResource(R.string.analysis_title),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,

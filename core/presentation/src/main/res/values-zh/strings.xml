@@ -320,4 +320,56 @@
 
     <string name="radar_mini_aos_passed">AOS 已过 %1$s</string>
     <string name="radar_mini_los_passed">LOS 已过 %1$s</string>
+
+    <!-- Pass analysis -->
+    <string name="analysis_title">过境分析</string>
+    <string name="analysis_geometry">过境几何</string>
+    <string name="analysis_orbit">轨道要素</string>
+    <string name="analysis_elevation">仰角曲线</string>
+    <string name="analysis_doppler">多普勒计划</string>
+    <string name="analysis_sky">天空轨迹</string>
+    <string name="analysis_samples">采样点</string>
+    <string name="analysis_stats">本星统计</string>
+    <string name="analysis_export">导出 CSV</string>
+    <string name="analysis_missing">该过境已不在当前列表中。可能已过期，或筛选条件已改变。</string>
+    <string name="analysis_aos">AOS</string>
+    <string name="analysis_los">LOS</string>
+    <string name="analysis_tca">TCA</string>
+    <string name="analysis_duration">时长</string>
+    <string name="analysis_max_elev">最大仰角</string>
+    <string name="analysis_az_tca">TCA 方位</string>
+    <string name="analysis_min_range">最近距离</string>
+    <string name="analysis_peak_rate">峰值距离率</string>
+    <string name="analysis_sweep">方位扫过</string>
+    <string name="analysis_sunlit">日照占比</string>
+    <string name="analysis_period">周期</string>
+    <string name="analysis_revs">每日圈数</string>
+    <string name="analysis_perigee">近地点高度</string>
+    <string name="analysis_apogee">远地点高度</string>
+    <string name="analysis_incl">倾角</string>
+    <string name="analysis_ecc">偏心率</string>
+    <string name="analysis_node">升交点漂移</string>
+    <string name="analysis_apsis">近地点进动</string>
+    <string name="analysis_age">星历年龄</string>
+    <string name="analysis_freshness">新鲜度</string>
+    <string name="analysis_fresh_fresh">新鲜</string>
+    <string name="analysis_fresh_good">良好</string>
+    <string name="analysis_fresh_usable">可用</string>
+    <string name="analysis_fresh_stale">已过期</string>
+    <string name="analysis_no_radios">该卫星没有收发器数据。</string>
+    <string name="analysis_peak_doppler">峰值多普勒</string>
+    <string name="analysis_pass_count">过境次数</string>
+    <string name="analysis_visible_total">累计可见</string>
+    <string name="analysis_median_elev">中位最大仰角</string>
+    <string name="analysis_best_elev">最高仰角</string>
+    <string name="analysis_class_leo">低轨</string>
+    <string name="analysis_class_meo">中轨</string>
+    <string name="analysis_class_geo">静止轨道</string>
+    <string name="analysis_class_heo">大椭圆</string>
+    <string name="analysis_samples_hint">表格为等间隔抽样；CSV 导出包含全部采样点。</string>
+
+    <string name="workbench_stats_title">当前窗口</string>
+    <string name="workbench_stats_passes">次过境</string>
+    <string name="workbench_stats_visible">可见</string>
+    <string name="workbench_stats_satellites">颗卫星</string>
 </resources>

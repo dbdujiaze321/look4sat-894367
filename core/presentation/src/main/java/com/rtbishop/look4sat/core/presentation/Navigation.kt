@@ -46,6 +46,13 @@ sealed class Screen(val iconResId: Int, val titleResId: Int) : NavKey {
 @Serializable
 data object RadarDestination : NavKey
 
+/**
+ * Full-screen pass analysis. Carries the pass identity rather than the whole pass object: a NavKey
+ * has to survive process death through serialisation, and an OrbitalPass holds a live propagator.
+ */
+@Serializable
+data class PassAnalysisDestination(val catNum: Int, val aosTime: Long) : NavKey
+
 interface IDeeplinkMatcher {
     fun match(deeplink: String): NavKey?
 }

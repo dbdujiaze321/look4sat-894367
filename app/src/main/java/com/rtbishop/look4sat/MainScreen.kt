@@ -73,11 +73,13 @@ import com.rtbishop.look4sat.core.domain.repository.RadioTrackingState
 import com.rtbishop.look4sat.core.presentation.DeeplinkResolver
 import com.rtbishop.look4sat.core.presentation.ElevationThresholds
 import com.rtbishop.look4sat.core.presentation.LocalElevationThresholds
+import com.rtbishop.look4sat.core.presentation.PassAnalysisDestination
 import com.rtbishop.look4sat.core.presentation.RadarDestination
 import com.rtbishop.look4sat.core.presentation.Screen
 import com.rtbishop.look4sat.core.presentation.hasEnoughHeight
 import com.rtbishop.look4sat.core.presentation.hasEnoughWidth
 import com.rtbishop.look4sat.feature.map.MapDestination
+import com.rtbishop.look4sat.feature.passes.PassAnalysisRoute
 import com.rtbishop.look4sat.feature.passes.PassesDestination
 import com.rtbishop.look4sat.feature.passes.WorkbenchDestination
 import com.rtbishop.look4sat.feature.radar.RadarDestination
@@ -94,6 +96,9 @@ fun NavRoot(deeplink: String? = null) {
     }
     val navigateBack: () -> Unit = { rootBackStack.removeLastOrNull() }
     val navigateToRadar: () -> Unit = { rootBackStack.add(RadarDestination) }
+    val navigateToAnalysis: (Int, Long) -> Unit = { catNum, aosTime ->
+        rootBackStack.add(PassAnalysisDestination(catNum, aosTime))
+    }
     // Incoming screen slides in from the right, outgoing drifts left at 1/3 speed (API35+ style)
     val pushTransition = slideInHorizontally(tween(300)) { it } togetherWith
         slideOutHorizontally(tween(300)) { -it / 3 }
@@ -125,7 +130,24 @@ fun NavRoot(deeplink: String? = null) {
                 rememberViewModelStoreNavEntryDecorator()
             ),
             entryProvider = entryProvider {
-                entry<Screen.Passes> { MainScreen(navigateToRadar = navigateToRadar) }
+                entry<Screen.Passes> {
+                    MainScreen(
+                        navigateToRadar = navigateToRadar,
+                        navigateToAnalysis = navigateToAnalysis
+                    )
+                }
+                entry<PassAnalysisDestination> { destination ->
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        PassAnalysisRoute(
+                            catNum = destination.catNum,
+                            aosTime = destination.aosTime,
+                            navigateUp = navigateBack
+                        )
+                    }
+                }
                 entry<RadarDestination> {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
@@ -140,7 +162,10 @@ fun NavRoot(deeplink: String? = null) {
 }
 
 @Composable
-private fun MainScreen(navigateToRadar: () -> Unit = {}) {
+private fun MainScreen(
+    navigateToRadar: () -> Unit = {},
+    navigateToAnalysis: (Int, Long) -> Unit = { _, _ -> }
+) {
     val context = LocalContext.current
     val container = (context.applicationContext as IContainerProvider).getMainContainer()
     val trackingState by container.radioTrackingService.state.collectAsStateWithLifecycle()
@@ -227,10 +252,13 @@ private fun MainScreen(navigateToRadar: () -> Unit = {}) {
                         SatellitesDestination(navigateUp = navigateBack)
                     }
                     entry<Screen.Passes> {
-                        PassesDestination { catNum, aosTime ->
-                            container.satelliteRepo.selectPass(catNum, aosTime)
-                            navigateToRadar()
-                        }
+                        PassesDestination(
+                            navigateToRadar = { catNum, aosTime ->
+                                container.satelliteRepo.selectPass(catNum, aosTime)
+                                navigateToRadar()
+                            },
+                            navigateToAnalysis = navigateToAnalysis
+                        )
                     }
                     entry<Screen.Status> { SatStatusDestination() }
                     entry<Screen.Map> { MapDestination() }
