@@ -330,7 +330,8 @@
     <string name="analysis_sky">天空轨迹</string>
     <string name="analysis_samples">采样点</string>
     <string name="analysis_stats">本星统计</string>
-    <string name="analysis_export">导出 CSV</string>
+    <string name="analysis_export_csv">CSV</string>
+    <string name="analysis_export_ics">.ics</string>
     <string name="analysis_missing">该过境已不在当前列表中。可能已过期，或筛选条件已改变。</string>
     <string name="analysis_aos">AOS</string>
     <string name="analysis_los">LOS</string>
@@ -372,4 +373,14 @@
     <string name="workbench_stats_passes">次过境</string>
     <string name="workbench_stats_visible">可见</string>
     <string name="workbench_stats_satellites">颗卫星</string>
+
+    <string name="prefs_loc_sites_title">已存站点</string>
+    <string name="prefs_stations_title">已存站点</string>
+    <string name="prefs_stations_empty">还没有保存的站点。在下面给当前位置起个名字，然后点“确定”。</string>
+    <string name="prefs_stations_name">站点名称</string>
+    <string name="prefs_stations_hint">点站点即切换；右侧垃圾桶图标删除。</string>
+    <string name="prefs_stations_delete">删除站点</string>
+
+    <string name="analysis_focus">只看此星</string>
+    <string name="analysis_focus_done">已改为仅跟踪该卫星</string>
 </resources>

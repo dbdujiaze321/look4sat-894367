@@ -381,7 +381,8 @@
     <string name="analysis_sky">Sky track</string>
     <string name="analysis_samples">Samples</string>
     <string name="analysis_stats">This satellite</string>
-    <string name="analysis_export">Export CSV</string>
+    <string name="analysis_export_csv">CSV</string>
+    <string name="analysis_export_ics">.ics</string>
     <string name="analysis_missing">This pass is no longer in the current list. It may have expired, or the filter changed.</string>
     <string name="analysis_aos">AOS</string>
     <string name="analysis_los">LOS</string>
@@ -423,4 +424,14 @@
     <string name="workbench_stats_passes">passes</string>
     <string name="workbench_stats_visible">visible</string>
     <string name="workbench_stats_satellites">satellites</string>
+
+    <string name="prefs_loc_sites_title">Saved sites</string>
+    <string name="prefs_stations_title">Saved sites</string>
+    <string name="prefs_stations_empty">No sites saved yet. Name the current position below and confirm.</string>
+    <string name="prefs_stations_name">Site name</string>
+    <string name="prefs_stations_hint">Tap a site to switch to it. The bin icon deletes it.</string>
+    <string name="prefs_stations_delete">Delete site</string>
+
+    <string name="analysis_focus">Track only this satellite</string>
+    <string name="analysis_focus_done">Selection reduced to this satellite</string>
 </resources>

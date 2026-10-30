@@ -43,7 +43,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -56,11 +58,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rtbishop.look4sat.core.domain.analysis.DopplerPlan
 import com.rtbishop.look4sat.core.domain.analysis.DopplerPoint
 import com.rtbishop.look4sat.core.domain.analysis.ElementFreshness
 import com.rtbishop.look4sat.core.domain.analysis.OrbitClass
 import com.rtbishop.look4sat.core.domain.analysis.OrbitElements
 import com.rtbishop.look4sat.core.domain.analysis.PassCsv
+import com.rtbishop.look4sat.core.domain.analysis.PassIcs
 import com.rtbishop.look4sat.core.domain.analysis.PassMetrics
 import com.rtbishop.look4sat.core.domain.analysis.PassSample
 import com.rtbishop.look4sat.core.domain.analysis.PassStatistics
@@ -86,6 +90,7 @@ fun PassAnalysisRoute(catNum: Int, aosTime: Long, navigateUp: () -> Unit) {
     PassAnalysisScreen(
         state = uiState,
         onSelectRadio = viewModel::selectRadio,
+        onFocusSatellite = viewModel::focusOnlyThisSatellite,
         navigateUp = navigateUp
     )
 }
@@ -94,6 +99,7 @@ fun PassAnalysisRoute(catNum: Int, aosTime: Long, navigateUp: () -> Unit) {
 private fun PassAnalysisScreen(
     state: PassAnalysisState,
     onSelectRadio: (String) -> Unit,
+    onFocusSatellite: () -> Unit,
     navigateUp: () -> Unit
 ) {
     Surface(color = MaterialTheme.colorScheme.background) {
@@ -112,7 +118,11 @@ private fun PassAnalysisScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                else -> AnalysisContent(state = state, onSelectRadio = onSelectRadio)
+                else -> AnalysisContent(
+                    state = state,
+                    onSelectRadio = onSelectRadio,
+                    onFocusSatellite = onFocusSatellite
+                )
             }
         }
     }
@@ -172,13 +182,33 @@ private fun ExportAction(state: PassAnalysisState) {
             context.contentResolver.openOutputStream(uri)?.use { it.write(csv.toByteArray()) }
         }
     }
-    TextButton(onClick = { launcher.launch(PassCsv.fileName(pass, metrics)) }) {
-        Text(text = stringResource(R.string.analysis_export), fontSize = 13.sp)
+    val ics = remember(pass, state.reminderMinutes) {
+        PassIcs.build(listOf(pass), reminderMinutes = state.reminderMinutes)
+    }
+    val icsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/calendar")
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        runCatching {
+            context.contentResolver.openOutputStream(uri)?.use { it.write(ics.toByteArray()) }
+        }
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        TextButton(onClick = { launcher.launch(PassCsv.fileName(pass, metrics)) }) {
+            Text(text = stringResource(R.string.analysis_export_csv), fontSize = 13.sp)
+        }
+        TextButton(onClick = { icsLauncher.launch(PassIcs.fileName(listOf(pass))) }) {
+            Text(text = stringResource(R.string.analysis_export_ics), fontSize = 13.sp)
+        }
     }
 }
 
 @Composable
-private fun AnalysisContent(state: PassAnalysisState, onSelectRadio: (String) -> Unit) {
+private fun AnalysisContent(
+    state: PassAnalysisState,
+    onSelectRadio: (String) -> Unit,
+    onFocusSatellite: () -> Unit
+) {
     val pass = state.pass ?: return
     val metrics = state.metrics
     // Assigned to a named val on purpose: `apply { ... }` followed by a lambda on the next line is
@@ -225,7 +255,7 @@ private fun AnalysisContent(state: PassAnalysisState, onSelectRadio: (String) ->
             }
             item { SamplesCard(samples = state.samples, timeLabel = timeLabel) }
         }
-        state.statistics?.let { item { StatisticsCard(statistics = it) } }
+        state.statistics?.let { item { StatisticsCard(statistics = it, onFocus = onFocusSatellite) } }
         item { Spacer(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) }
     }
 }
@@ -343,14 +373,33 @@ private fun DopplerCard(
             )
             if (state.plan.size >= 2) {
                 DopplerChart(plan = state.plan, nominalHz = reference, timeLabel = timeLabel)
-                DopplerTable(plan = state.plan, metrics = metrics, reference = reference)
+                DopplerTable(
+                    plan = state.plan,
+                    metrics = metrics,
+                    reference = reference,
+                    uplinkReference = state.selectedRadio?.uplinkLow
+                        ?: state.selectedRadio?.uplinkHigh
+                )
             }
         }
     }
 }
 
+/**
+ * Receive and transmit offsets at the three landmarks.
+ *
+ * The TCA row is computed from the refined range rate rather than from the nearest sample: samples
+ * are seconds apart, and at TCA the rate is crossing zero fast enough that the closest sample still
+ * reads a couple of hundred hertz off. Showing that as "the Doppler at TCA" undercuts the whole
+ * premise of the screen.
+ */
 @Composable
-private fun DopplerTable(plan: List<DopplerPoint>, metrics: PassMetrics, reference: Long) {
+private fun DopplerTable(
+    plan: List<DopplerPoint>,
+    metrics: PassMetrics,
+    reference: Long,
+    uplinkReference: Long?
+) {
     val rows = listOf(
         stringResource(R.string.analysis_aos) to metrics.aosTime,
         stringResource(R.string.analysis_tca) to metrics.tcaTime,
@@ -363,11 +412,26 @@ private fun DopplerTable(plan: List<DopplerPoint>, metrics: PassMetrics, referen
             TableCell("TX Δ", weight = 1f, isHeader = true)
         }
         rows.forEach { (label, time) ->
-            val point = nearest(plan, time)
+            val atTca = time == metrics.tcaTime
+            val rxDelta = if (atTca) {
+                DopplerPlan.correctedDownlinkHz(reference, metrics.rangeRateAtTcaKmS) - reference
+            } else {
+                nearest(plan, time)?.downlinkHz?.minus(reference)
+            }
+            // Transmit offsets are relative to the uplink nominal, not to the downlink reference:
+            // on a cross-band transponder the two are hundreds of megahertz apart and subtracting
+            // the downlink would print a meaningless five digit number.
+            val txDelta = uplinkReference?.let { uplink ->
+                if (atTca) {
+                    DopplerPlan.correctedUplinkHz(uplink, metrics.rangeRateAtTcaKmS) - uplink
+                } else {
+                    nearest(plan, time)?.uplinkHz?.minus(uplink)
+                }
+            }
             Row(modifier = Modifier.fillMaxWidth()) {
                 TableCell(label, weight = 0.7f)
-                TableCell(point?.downlinkHz?.let { formatDelta(it - reference) } ?: "—", weight = 1f)
-                TableCell(point?.uplinkHz?.let { formatDelta(it - reference) } ?: "—", weight = 1f)
+                TableCell(rxDelta?.let(::formatDelta) ?: "—", weight = 1f)
+                TableCell(txDelta?.let(::formatDelta) ?: "—", weight = 1f)
             }
         }
     }
@@ -419,7 +483,8 @@ private fun SamplesCard(samples: List<PassSample>, timeLabel: (Long) -> String) 
 }
 
 @Composable
-private fun StatisticsCard(statistics: PassStatistics) {
+private fun StatisticsCard(statistics: PassStatistics, onFocus: () -> Unit) {
+    var focused by remember { mutableStateOf(false) }
     SectionCard(title = stringResource(R.string.analysis_stats)) {
         MetricPair(
             stringResource(R.string.analysis_pass_count) to "${statistics.passCount}",
@@ -429,6 +494,22 @@ private fun StatisticsCard(statistics: PassStatistics) {
             stringResource(R.string.analysis_median_elev) to "${formatDegrees(statistics.medianMaxElevationDeg)}°",
             stringResource(R.string.analysis_best_elev) to "${formatDegrees(statistics.bestElevationDeg)}°"
         )
+        // Focus mode: one tap to drop every other satellite, which is what a single-target
+        // observing session wants. The label changes so the action is not silently repeatable.
+        TextButton(
+            enabled = !focused,
+            onClick = {
+                onFocus()
+                focused = true
+            }
+        ) {
+            Text(
+                text = stringResource(
+                    if (focused) R.string.analysis_focus_done else R.string.analysis_focus
+                ),
+                fontSize = 12.sp
+            )
+        }
     }
 }
 

@@ -20,6 +20,10 @@ package com.rtbishop.look4sat.feature.settings
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -72,6 +76,8 @@ import com.rtbishop.look4sat.core.presentation.IconCard
 import com.rtbishop.look4sat.core.presentation.LocalSpacing
 import com.rtbishop.look4sat.core.presentation.MainTheme
 import com.rtbishop.look4sat.core.presentation.R
+import com.rtbishop.look4sat.core.domain.model.SavedStation
+import com.rtbishop.look4sat.core.domain.model.StationBook
 import com.rtbishop.look4sat.core.presentation.ConfirmDialog
 import com.rtbishop.look4sat.core.presentation.dragHandle
 import com.rtbishop.look4sat.core.presentation.dragLift
@@ -919,4 +925,132 @@ private fun baudLabel(rate: Int): String = when (rate) {
     57600 -> "57k"
     115200 -> "115k"
     else -> rate.toString()
+}
+
+
+/**
+ * Saved observing sites.
+ *
+ * Tapping a row switches to it immediately and closes the dialog: the reason to open this list is
+ * almost always "use that site now", not "admire my list". Deletion is a separate icon so it can
+ * never be triggered by the same tap that selects.
+ */
+@Composable
+fun StationBookDialog(
+    book: StationBook,
+    defaultName: String,
+    dismiss: () -> Unit,
+    onSelect: (String) -> Unit,
+    onSaveCurrent: (String) -> Unit,
+    onDelete: (String) -> Unit
+) {
+    val spacing = LocalSpacing.current
+    val nameValue = rememberSaveable { mutableStateOf(defaultName) }
+    ConfirmDialog(
+        title = stringResource(R.string.prefs_stations_title),
+        onCancel = dismiss,
+        onAccept = {
+            onSaveCurrent(nameValue.value)
+            dismiss()
+        }
+    ) {
+        // The sheet sizes itself to the content and clips whatever does not fit, so the whole
+        // body scrolls. Without this the name field and the hint were cut off on a 1080x1920 phone.
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = spacing.large, vertical = spacing.small),
+            verticalArrangement = Arrangement.spacedBy(spacing.small)
+        ) {
+            if (book.stations.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.prefs_stations_empty),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    book.stations.forEach { station ->
+                        StationRow(
+                            station = station,
+                            isActive = station.id == book.activeId,
+                            onSelect = {
+                                onSelect(station.id)
+                                dismiss()
+                            },
+                            onDelete = { onDelete(station.id) }
+                        )
+                    }
+                }
+            }
+            OutlinedTextField(
+                value = nameValue.value,
+                onValueChange = { nameValue.value = it },
+                label = { Text(text = stringResource(R.string.prefs_stations_name)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = stringResource(R.string.prefs_stations_hint),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(spacing.medium))
+        }
+    }
+}
+
+@Composable
+private fun StationRow(
+    station: SavedStation,
+    isActive: Boolean,
+    onSelect: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onSelect)
+            .padding(vertical = 4.dp)
+    ) {
+        Icon(
+            painter = painterResource(
+                id = if (isActive) R.drawable.ic_check_on else R.drawable.ic_check_off
+            ),
+            contentDescription = null,
+            tint = if (isActive) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            modifier = Modifier.size(18.dp)
+        )
+        Column(modifier = Modifier.weight(1f).padding(start = 8.dp)) {
+            Text(
+                text = station.name,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = String.format(
+                    java.util.Locale.ROOT,
+                    "%.2f, %.2f · %s",
+                    station.latitude,
+                    station.longitude,
+                    station.locator
+                ),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        IconButton(onClick = onDelete) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_delete),
+                contentDescription = stringResource(R.string.prefs_stations_delete),
+                tint = MaterialTheme.colorScheme.error
+            )
+        }
+    }
 }

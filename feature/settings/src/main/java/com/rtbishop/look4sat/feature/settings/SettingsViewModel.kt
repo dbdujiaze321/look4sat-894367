@@ -21,10 +21,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.rtbishop.look4sat.core.domain.model.SavedStation
+import com.rtbishop.look4sat.core.domain.model.StationBook
 import com.rtbishop.look4sat.core.domain.repository.IDatabaseRepo
 import com.rtbishop.look4sat.core.domain.repository.IMainContainer
 import com.rtbishop.look4sat.core.domain.repository.ISettingsRepo
 import com.rtbishop.look4sat.core.domain.usecase.IShowToast
+import com.rtbishop.look4sat.core.domain.utility.positionToQth
 import com.rtbishop.look4sat.core.presentation.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -112,6 +115,9 @@ class SettingsViewModel(
             SettingsAction.SetGpsPosition -> setGpsPosition()
             is SettingsAction.SetGeoPosition -> setGeoPosition(action.latitude, action.longitude)
             is SettingsAction.SetQthPosition -> setQthPosition(action.locator)
+            is SettingsAction.SaveStation -> saveStation(action.name)
+            is SettingsAction.SelectStation -> selectStation(action.id)
+            is SettingsAction.DeleteStation -> deleteStation(action.id)
             SettingsAction.DismissPosMessages -> dismissPosMessage()
             // Data
             SettingsAction.UpdateFromWeb -> runDataUpdate { databaseRepo.updateFromRemote() }
@@ -163,6 +169,59 @@ class SettingsViewModel(
 
     private fun setQthPosition(locator: String) {
         updatePosition(R.string.prefs_loc_qth_error) { settingsRepo.setStationPosition(locator) }
+    }
+
+    /**
+     * Stores the current position under a name.
+     *
+     * Saving the same coordinates twice updates the existing entry instead of appending a duplicate:
+     * the GPS jitters by a few metres between saves, so comparing exactly would never match and the
+     * list would fill with near-identical rows.
+     */
+    private fun saveStation(name: String) {
+        val position = settingsRepo.stationPosition.value
+        val book = StationBook.decode(settingsRepo.otherSettings.value.stationsJson)
+        val existing = book.stations.firstOrNull {
+            kotlin.math.abs(it.latitude - position.latitude) < 1e-4 &&
+                kotlin.math.abs(it.longitude - position.longitude) < 1e-4
+        }
+        // Derived from the coordinates, not from the stored locator field: that field reads
+        // "null" when it was never filled in, which would become a station called "null".
+        val fallback = positionToQth(position.latitude, position.longitude) ?: "QTH"
+        val label = name.trim().ifBlank { fallback }
+        if (StationBook.validate(label, position.latitude, position.longitude, position.altitude) != null) {
+            return
+        }
+        val station = SavedStation(
+            id = existing?.id ?: StationBook.newId(),
+            name = label,
+            latitude = position.latitude,
+            longitude = position.longitude,
+            altitudeMeters = position.altitude
+        )
+        val updated = book.addOrReplace(station)
+        settingsRepo.updateOtherSettings { it.copy(stationsJson = updated.encode()) }
+    }
+
+    /**
+     * Switches the active site and moves the station position with it.
+     *
+     * Both steps happen together on purpose: storing only the id would leave the predictions running
+     * from the old coordinates while the UI claimed a different site was selected.
+     */
+    private fun selectStation(id: String) {
+        val book = StationBook.decode(settingsRepo.otherSettings.value.stationsJson)
+        val station = book.select(id).active() ?: return
+        val applied = settingsRepo.setStationPosition(
+            station.latitude, station.longitude, station.altitudeMeters
+        )
+        if (!applied) return
+        settingsRepo.updateOtherSettings { it.copy(stationsJson = book.select(id).encode()) }
+    }
+
+    private fun deleteStation(id: String) {
+        val book = StationBook.decode(settingsRepo.otherSettings.value.stationsJson).remove(id)
+        settingsRepo.updateOtherSettings { it.copy(stationsJson = book.encode()) }
     }
 
     /**

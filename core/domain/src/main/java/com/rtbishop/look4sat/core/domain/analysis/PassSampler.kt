@@ -55,6 +55,11 @@ data class PassMetrics(
     val azimuthAtTcaDeg: Double,
     val minRangeKm: Double,
     val maxRangeKm: Double,
+    /**
+     * Range rate at TCA. Mathematically zero, and worth carrying explicitly: the nearest sample to
+     * TCA is up to half a step away, where the rate has already moved by hundreds of hertz.
+     */
+    val rangeRateAtTcaKmS: Double,
     /** Largest absolute range rate over the pass, i.e. the worst-case Doppler on the horizon. */
     val peakRangeRateKmS: Double,
     /** Signed azimuth travelled between AOS and LOS. Negative when the pass runs anticlockwise. */
@@ -165,6 +170,7 @@ object PassSampler {
             azimuthAtTcaDeg = atTca.azimuth / DEG2RAD,
             minRangeKm = atTca.distance,
             maxRangeKm = samples.maxOf { it.rangeKm },
+            rangeRateAtTcaKmS = atTca.distanceRate,
             peakRangeRateKmS = peakRate,
             azimuthSweepDeg = azimuthSweep(samples),
             sunlitFraction = samples.count { it.sunlit }.toDouble() / samples.size

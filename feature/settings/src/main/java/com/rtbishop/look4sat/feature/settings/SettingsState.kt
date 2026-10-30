@@ -53,6 +53,9 @@ sealed interface SettingsAction {
     data object SetGpsPosition : SettingsAction
     data class SetGeoPosition(val latitude: Double, val longitude: Double) : SettingsAction
     data class SetQthPosition(val locator: String) : SettingsAction
+    data class SaveStation(val name: String) : SettingsAction
+    data class SelectStation(val id: String) : SettingsAction
+    data class DeleteStation(val id: String) : SettingsAction
     data object DismissPosMessages : SettingsAction
 
     // Data

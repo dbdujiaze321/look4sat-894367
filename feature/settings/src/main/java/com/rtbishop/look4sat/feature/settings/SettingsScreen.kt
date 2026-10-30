@@ -61,6 +61,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,10 +69,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rtbishop.look4sat.core.domain.model.DataSourcesSettings
 import com.rtbishop.look4sat.core.domain.model.OtherSettings
+import com.rtbishop.look4sat.core.domain.model.StationBook
 import com.rtbishop.look4sat.core.domain.model.RadarIconStyle
 import com.rtbishop.look4sat.core.domain.model.ThemePreset
 import com.rtbishop.look4sat.core.domain.predict.GeoPos
 import com.rtbishop.look4sat.core.domain.repository.IContainerProvider
+import com.rtbishop.look4sat.core.domain.utility.positionToQth
 import com.rtbishop.look4sat.core.presentation.CardButton
 import com.rtbishop.look4sat.core.presentation.CustomRadarIcon
 import com.rtbishop.look4sat.core.presentation.IconCard
@@ -280,6 +283,7 @@ private fun SettingsScreen(uiState: SettingsState, onAction: (SettingsAction) ->
             item {
                 LocationCard(
                     settings = uiState.positionSettings,
+                    stations = StationBook.decode(uiState.otherSettings.stationsJson),
                     setGpsPos = permissions.launchLocation,
                     showPosDialog = { dialogs.position = true },
                     showLocDialog = { dialogs.locator = true },
@@ -330,18 +334,20 @@ private fun SettingsScreen(uiState: SettingsState, onAction: (SettingsAction) ->
 private fun LocationCardPreview() = MainTheme {
     val stationPos = GeoPos(0.0, 0.0, 0.0, "IO91vl", 0L)
     val settings = PositionSettings(true, stationPos, 0)
-    LocationCard(settings = settings, setGpsPos = {}, showPosDialog = {}, {}, {}) {}
+    LocationCard(settings = settings, stations = StationBook.EMPTY, setGpsPos = {}, showPosDialog = {}, {}, {}) {}
 }
 
 @Composable
 private fun LocationCard(
     settings: PositionSettings,
+    stations: StationBook,
     setGpsPos: () -> Unit,
     showPosDialog: () -> Unit,
     showLocDialog: () -> Unit,
     dismissPosMessage: () -> Unit,
     onAction: (SettingsAction) -> Unit
 ) {
+    var showStations by remember { mutableStateOf(false) }
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -382,7 +388,31 @@ private fun LocationCard(
                     modifier = Modifier.weight(1f)
                 )
             }
+            // A fourth button would squeeze "QTH 网格" to an ellipsis on a 360 dp screen, so the
+            // saved sites get their own line instead of sharing that row.
+            TextButton(onClick = { showStations = true }) {
+                val active = stations.active()
+                val suffix = active?.name?.let { " · $it" }.orEmpty()
+                Text(
+                    text = stringResource(id = R.string.prefs_loc_sites_title) +
+                        " (${stations.stations.size})$suffix",
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
+    }
+    if (showStations) {
+        StationBookDialog(
+            book = stations,
+            defaultName = positionToQth(settings.stationPos.latitude, settings.stationPos.longitude)
+                ?: "",
+            dismiss = { showStations = false },
+            onSelect = { onAction(SettingsAction.SelectStation(it)) },
+            onSaveCurrent = { onAction(SettingsAction.SaveStation(it)) },
+            onDelete = { onAction(SettingsAction.DeleteStation(it)) }
+        )
     }
     if (settings.messageResId != 0) {
         val errorString = stringResource(id = settings.messageResId)

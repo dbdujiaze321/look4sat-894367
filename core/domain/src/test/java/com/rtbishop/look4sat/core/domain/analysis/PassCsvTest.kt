@@ -58,6 +58,7 @@ class PassCsvTest {
         azimuthAtTcaDeg = 181.5,
         minRangeKm = 512.25,
         maxRangeKm = 2143.5,
+        rangeRateAtTcaKmS = 0.0,
         peakRangeRateKmS = 6.9,
         azimuthSweepDeg = 118.0,
         sunlitFraction = 0.75

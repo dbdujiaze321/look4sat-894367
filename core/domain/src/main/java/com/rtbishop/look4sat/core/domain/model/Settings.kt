@@ -80,7 +80,9 @@ data class OtherSettings(
     /** How many minutes before AOS the reminder fires. */
     val passAlarmLeadMinutes: Int = 10,
     /** Serialised [ThemeOverrides]; empty means "preset only". */
-    val themeJson: String = ""
+    val themeJson: String = "",
+    /** Serialised [StationBook]: saved observing sites plus the active one. */
+    val stationsJson: String = ""
 )
 
 /**

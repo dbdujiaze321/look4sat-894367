@@ -52,7 +52,9 @@ data class PassAnalysisState(
     val selectedRadioUuid: String? = null,
     val plan: List<DopplerPoint> = emptyList(),
     val referenceHz: Long? = null,
-    val statistics: PassStatistics? = null
+    val statistics: PassStatistics? = null,
+    /** Lead time used for the calendar reminder; mirrors the pass alarm setting. */
+    val reminderMinutes: Int = 10
 ) {
     val selectedRadio: SatRadio? get() = radios.firstOrNull { it.uuid == selectedRadioUuid }
 }
@@ -73,12 +75,25 @@ class PassAnalysisViewModel(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
-        PassAnalysisState(isUtc = settingsRepo.otherSettings.value.stateOfUtc)
+        PassAnalysisState(
+            isUtc = settingsRepo.otherSettings.value.stateOfUtc,
+            reminderMinutes = settingsRepo.otherSettings.value.passAlarmLeadMinutes
+        )
     )
     val uiState: StateFlow<PassAnalysisState> = _uiState.asStateFlow()
 
     init {
         load()
+    }
+
+    /**
+     * Drops every other satellite from the selection.
+     *
+     * The repository already watches the selection and recalculates on change, so this one call is
+     * the whole feature: no second prediction path, no chance of disagreeing with the pass list.
+     */
+    fun focusOnlyThisSatellite() {
+        settingsRepo.setSelectedIds(listOf(catNum))
     }
 
     fun selectRadio(uuid: String) {
