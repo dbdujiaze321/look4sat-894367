@@ -45,7 +45,7 @@ class DataParser(private val dispatcher: CoroutineDispatcher) {
             val iterator = lines.iterator()
             if (!iterator.hasNext()) return@useLines emptyList()
             val columns = parseCSVColumns(iterator.next())
-            iterator.asSequence().mapNotNull { line -> parseCSV(line.split(","), columns) }.toList()
+            iterator.asSequence().mapNotNull { line -> parseCSV(splitCsvLine(line), columns) }.toList()
         }
     }
 
@@ -123,6 +123,38 @@ class DataParser(private val dispatcher: CoroutineDispatcher) {
      * OMM columns are located by name, as providers agree on the names but not on the order.
      * Falls back to the Celestrak layout when the header is missing or unrecognized.
      */
+    /**
+     * RFC 4180 aware split.
+     *
+     * `line.split(",")` loses every column after a quoted name: "CSS, (TIANHE)" is one field, not
+     * two, and Celestrak does quote such names. The shift is silent — the row still parses, just with
+     * the wrong numbers in each column.
+     */
+    private fun splitCsvLine(line: String): List<String> {
+        val fields = ArrayList<String>(16)
+        val current = StringBuilder(32)
+        var inQuotes = false
+        var index = 0
+        while (index < line.length) {
+            val char = line[index]
+            when {
+                inQuotes && char == '"' && line.getOrNull(index + 1) == '"' -> {
+                    current.append('"')
+                    index++
+                }
+                char == '"' -> inQuotes = !inQuotes
+                char == ',' && !inQuotes -> {
+                    fields.add(current.toString())
+                    current.setLength(0)
+                }
+                else -> current.append(char)
+            }
+            index++
+        }
+        fields.add(current.toString())
+        return fields
+    }
+
     private fun parseCSVColumns(header: String): Map<String, Int> {
         val columns = header.split(",").withIndex().associate { (index, name) ->
             name.trim().trim('"').uppercase() to index

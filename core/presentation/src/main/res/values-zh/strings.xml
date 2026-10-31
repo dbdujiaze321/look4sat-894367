@@ -389,4 +389,6 @@
     <string name="prefs_data_paste_label">名称行、第 1 行、第 2 行</string>
     <string name="prefs_data_paste_hint">每颗卫星三行。库里更新的数据会保留。</string>
     <string name="prefs_data_paste_error">这段文本里没有找到有效的 TLE。</string>
+
+    <string name="prefs_data_export">导出星历</string>
 </resources>

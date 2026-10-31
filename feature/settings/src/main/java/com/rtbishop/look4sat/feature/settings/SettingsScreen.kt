@@ -50,6 +50,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -68,6 +69,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rtbishop.look4sat.core.domain.model.DataSourcesSettings
+import com.rtbishop.look4sat.core.domain.analysis.ElementCsv
 import com.rtbishop.look4sat.core.domain.model.OtherSettings
 import com.rtbishop.look4sat.core.domain.model.StationBook
 import com.rtbishop.look4sat.core.domain.model.RadarIconStyle
@@ -86,6 +88,7 @@ import com.rtbishop.look4sat.core.presentation.TopBar
 import com.rtbishop.look4sat.core.presentation.WhatsNewDialog
 import com.rtbishop.look4sat.core.presentation.infiniteMarquee
 import com.rtbishop.look4sat.core.presentation.isVerticalLayout
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -96,11 +99,19 @@ fun SettingsDestination() {
     val container = (context.applicationContext as IContainerProvider).getMainContainer()
     val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.factory(container))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    SettingsScreen(uiState, viewModel::onAction)
+    SettingsScreen(
+        uiState = uiState,
+        onAction = viewModel::onAction,
+        loadElementsCsv = { container.databaseRepo.exportElementsCsv() }
+    )
 }
 
 @Composable
-private fun SettingsScreen(uiState: SettingsState, onAction: (SettingsAction) -> Unit) {
+private fun SettingsScreen(
+    uiState: SettingsState,
+    onAction: (SettingsAction) -> Unit,
+    loadElementsCsv: suspend () -> String
+) {
     val dialogs = rememberDialogVisibility()
     // Android 13+ needs an explicit grant before a reminder can be posted at all.
     val notificationPermission =
@@ -302,7 +313,8 @@ private fun SettingsScreen(uiState: SettingsState, onAction: (SettingsAction) ->
                     showDataSourcesDialog = { dialogs.dataSources = true },
                     onImportTle = { text ->
                         onAction(SettingsAction.ImportTleText(text, pasteError))
-                    }
+                    },
+                    loadElementsCsv = loadElementsCsv
                 )
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -438,7 +450,8 @@ private fun DataCardPreview() = MainTheme {
         updateFromWeb = {},
         clearAllData = {},
         showDataSourcesDialog = {},
-        onImportTle = {}
+        onImportTle = {},
+        loadElementsCsv = { "" }
     )
 }
 
@@ -448,9 +461,25 @@ private fun DataCard(
     updateFromWeb: () -> Unit,
     clearAllData: () -> Unit,
     showDataSourcesDialog: () -> Unit,
-    onImportTle: (String) -> Unit
+    onImportTle: (String) -> Unit,
+    loadElementsCsv: suspend () -> String
 ) {
     var showPaste by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    // Built before the file picker opens: if the export fails there is nothing to save, and asking
+    // for a location first would leave an empty file behind.
+    var pendingCsv by remember { mutableStateOf<String?>(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri ->
+        val payload = pendingCsv
+        pendingCsv = null
+        if (uri == null || payload == null) return@rememberLauncherForActivityResult
+        runCatching {
+            context.contentResolver.openOutputStream(uri)?.use { it.write(payload.toByteArray()) }
+        }
+    }
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -489,9 +518,20 @@ private fun DataCard(
                 )
             }
             // Same reason as the saved sites: a fourth button would ellipsise the labels, so the
-            // paste path gets its own line.
-            TextButton(onClick = { showPaste = true }) {
-                Text(text = stringResource(id = R.string.prefs_data_paste), fontSize = 12.sp)
+            // paste and export paths share a line of their own.
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                TextButton(onClick = { showPaste = true }) {
+                    Text(text = stringResource(id = R.string.prefs_data_paste), fontSize = 12.sp)
+                }
+                TextButton(onClick = {
+                    scope.launch {
+                        val csv = runCatching { loadElementsCsv() }.getOrNull() ?: return@launch
+                        pendingCsv = csv
+                        exportLauncher.launch(ElementCsv.fileName())
+                    }
+                }) {
+                    Text(text = stringResource(id = R.string.prefs_data_export), fontSize = 12.sp)
+                }
             }
         }
     }

@@ -22,6 +22,9 @@ interface IDatabaseRepo {
 
     /** Imports element sets pasted as text: the case where a satellite exists only in a message. */
     suspend fun updateTLEFromText(text: String): Int
+
+    /** Every stored element set as CSV, in the format this app imports back. */
+    suspend fun exportElementsCsv(): String
     suspend fun updateTransceiversFromFile(uri: String): Int
     suspend fun updateFromRemote()
     suspend fun clearAllData()

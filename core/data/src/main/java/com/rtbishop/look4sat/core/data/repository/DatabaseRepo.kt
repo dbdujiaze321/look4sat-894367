@@ -77,6 +77,19 @@ class DatabaseRepo(
         entries.size
     }
 
+    /**
+     * The whole catalogue as CSV.
+     *
+     * Deliberately reuses the importer's column names so the file is a real backup rather than a
+     * one-way report: it can be imported on another device, or after a data refresh, without a
+     * conversion step. Only fields that are actually stored are written.
+     */
+    override suspend fun exportElementsCsv(): String = withContext(dispatcher) {
+        val ids = localSource.getEntriesList().map { it.catnum }
+        val entries = localSource.getEntriesWithIds(ids).map { it.data }
+        com.rtbishop.look4sat.core.domain.analysis.ElementCsv.build(entries)
+    }
+
     override suspend fun updateTransceiversFromFile(uri: String): Int = withContext(dispatcher) {
         var importedCount = 0
         remoteSource.getFileStream(uri)?.let { stream ->
