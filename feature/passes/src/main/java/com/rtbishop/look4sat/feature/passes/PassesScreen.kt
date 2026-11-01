@@ -172,7 +172,11 @@ private fun PassesScreen(
             TopBar(
                 isVerticalLayout = isVerticalLayout,
                 startAction = {
-                    IconCard(action = { onAction(PassesAction.ToggleRadiosDialog) }, resId = R.drawable.ic_radios)
+                    IconCard(
+                        action = { onAction(PassesAction.ToggleRadiosDialog) },
+                        resId = R.drawable.ic_radios,
+                        contentDescription = stringResource(R.string.cd_radios)
+                    )
                 },
                 topInfo = {
                     SearchBar(
@@ -191,11 +195,13 @@ private fun PassesScreen(
                                     icsLauncher.launch(PassIcs.fileName(uiState.itemsList))
                                 }
                             },
-                            resId = R.drawable.ic_calendar
+                            resId = R.drawable.ic_calendar,
+                            contentDescription = stringResource(R.string.cd_calendar)
                         )
                         IconCard(
                             action = { onAction(PassesAction.TogglePassesDialog) },
-                            resId = R.drawable.ic_filter
+                            resId = R.drawable.ic_filter,
+                            contentDescription = stringResource(R.string.cd_filter)
                         )
                     }
                 }

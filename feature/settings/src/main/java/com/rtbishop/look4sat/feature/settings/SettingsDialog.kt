@@ -333,13 +333,15 @@ private fun LazyListScope.sourceSection(
             IconCard(
                 action = onRestore,
                 resId = R.drawable.ic_restore,
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentDescription = stringResource(R.string.cd_restore)
             )
             Spacer(modifier = Modifier.width(6.dp))
             IconCard(
                 action = onAdd,
                 resId = R.drawable.ic_add,
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentDescription = stringResource(R.string.cd_add)
             )
         }
         Text(

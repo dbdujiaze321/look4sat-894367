@@ -138,12 +138,12 @@ private fun SatellitesScreen(
                 IconCard(
                     action = { onAction(SatellitesAction.UnselectAll) },
                     resId = R.drawable.ic_check_off,
-                    modifier = Modifier.semantics { contentDescription = clearAllCd }
+                    contentDescription = clearAllCd
                 )
                 IconCard(
                     action = { onAction(SatellitesAction.SelectAll) },
                     resId = R.drawable.ic_check_on,
-                    modifier = Modifier.semantics { contentDescription = selectAllCd }
+                    contentDescription = selectAllCd
                 )
             }
         } else {
@@ -165,12 +165,12 @@ private fun SatellitesScreen(
                 IconCard(
                     action = { onAction(SatellitesAction.UnselectAll) },
                     resId = R.drawable.ic_check_off,
-                    modifier = Modifier.semantics { contentDescription = clearAllCd }
+                    contentDescription = clearAllCd
                 )
                 IconCard(
                     action = { onAction(SatellitesAction.SelectAll) },
                     resId = R.drawable.ic_check_on,
-                    modifier = Modifier.semantics { contentDescription = selectAllCd }
+                    contentDescription = selectAllCd
                 )
             }
         }

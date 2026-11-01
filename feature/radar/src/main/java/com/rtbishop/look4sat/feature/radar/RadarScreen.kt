@@ -169,17 +169,33 @@ private fun RadarScreen(
         val isVertical = isVerticalLayout()
         if (isVertical) {
             TopBar {
-                IconCard(action = navigateUp, resId = R.drawable.ic_back)
+                IconCard(
+                    action = navigateUp,
+                    resId = R.drawable.ic_back,
+                    contentDescription = stringResource(R.string.cd_back)
+                )
                 TimerRow(timeString = uiState.currentTime, isTimeAos = uiState.isTimeAos)
-                IconCard(action = addToCalendar, resId = R.drawable.ic_calendar)
+                IconCard(
+                    action = addToCalendar,
+                    resId = R.drawable.ic_calendar,
+                    contentDescription = stringResource(R.string.cd_calendar)
+                )
             }
             TopBar { NextPassRow(pass = upcomingPass, timeNow = timeNow) }
         } else {
             TopBar {
-                IconCard(action = navigateUp, resId = R.drawable.ic_back)
+                IconCard(
+                    action = navigateUp,
+                    resId = R.drawable.ic_back,
+                    contentDescription = stringResource(R.string.cd_back)
+                )
                 TimerRow(timeString = uiState.currentTime, isTimeAos = uiState.isTimeAos)
                 NextPassRow(pass = upcomingPass, timeNow = timeNow, modifier = Modifier.weight(1f))
-                IconCard(action = addToCalendar, resId = R.drawable.ic_calendar)
+                IconCard(
+                    action = addToCalendar,
+                    resId = R.drawable.ic_calendar,
+                    contentDescription = stringResource(R.string.cd_calendar)
+                )
             }
         }
         if (isVertical) {

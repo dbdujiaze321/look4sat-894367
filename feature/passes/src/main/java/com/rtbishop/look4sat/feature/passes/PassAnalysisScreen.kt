@@ -137,7 +137,11 @@ private fun AnalysisHeader(state: PassAnalysisState, navigateUp: () -> Unit) {
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconCard(action = navigateUp, resId = R.drawable.ic_back)
+        IconCard(
+            action = navigateUp,
+            resId = R.drawable.ic_back,
+            contentDescription = stringResource(R.string.cd_back)
+        )
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(

@@ -442,4 +442,20 @@
     <string name="prefs_data_paste_error">No valid TLE found in that text.</string>
 
     <string name="prefs_data_export">Export elements</string>
+
+    <!-- Icon button descriptions for screen readers -->
+    <string name="cd_back">Back</string>
+    <string name="cd_filter">Filter passes</string>
+    <string name="cd_radios">Transceiver filter</string>
+    <string name="cd_calendar">Add to calendar</string>
+    <string name="cd_prev">Previous satellite</string>
+    <string name="cd_next">Next satellite</string>
+    <string name="cd_clear">Clear image</string>
+    <string name="cd_save">Save image</string>
+    <string name="cd_record">Start recording</string>
+    <string name="cd_stop">Stop recording</string>
+    <string name="cd_restore">Restore defaults</string>
+    <string name="cd_add">Add</string>
+    <string name="cd_license">License</string>
+    <string name="cd_privacy">Privacy policy</string>
 </resources>

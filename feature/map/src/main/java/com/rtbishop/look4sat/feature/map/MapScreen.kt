@@ -200,17 +200,35 @@ private fun MapScreen(
         val isVertical = isVerticalLayout()
         if (isVertical) {
             TopBar {
-                IconCard(action = { onAction(MapAction.SelectPrev) }, resId = R.drawable.ic_arrow, modifier = rotateMod)
+                IconCard(
+                    action = { onAction(MapAction.SelectPrev) },
+                    resId = R.drawable.ic_arrow,
+                    modifier = rotateMod,
+                    contentDescription = stringResource(R.string.cd_prev)
+                )
                 TimerRow(timeString = timeString, isTimeAos = isTimeAos)
-                IconCard(action = { onAction(MapAction.SelectNext) }, resId = R.drawable.ic_arrow)
+                IconCard(
+                    action = { onAction(MapAction.SelectNext) },
+                    resId = R.drawable.ic_arrow,
+                    contentDescription = stringResource(R.string.cd_next)
+                )
             }
             TopBar { NextPassRow(pass = uiState.orbitalPass, timeNow = timeNow) }
         } else {
             TopBar {
-                IconCard(action = { onAction(MapAction.SelectPrev) }, resId = R.drawable.ic_arrow, modifier = rotateMod)
+                IconCard(
+                    action = { onAction(MapAction.SelectPrev) },
+                    resId = R.drawable.ic_arrow,
+                    modifier = rotateMod,
+                    contentDescription = stringResource(R.string.cd_prev)
+                )
                 TimerRow(timeString = timeString, isTimeAos = isTimeAos)
                 NextPassRow(pass = uiState.orbitalPass, timeNow = timeNow, modifier = Modifier.weight(1f))
-                IconCard(action = { onAction(MapAction.SelectNext) }, resId = R.drawable.ic_arrow)
+                IconCard(
+                    action = { onAction(MapAction.SelectNext) },
+                    resId = R.drawable.ic_arrow,
+                    contentDescription = stringResource(R.string.cd_next)
+                )
             }
         }
         ElevatedCard(modifier = Modifier.weight(1f)) {

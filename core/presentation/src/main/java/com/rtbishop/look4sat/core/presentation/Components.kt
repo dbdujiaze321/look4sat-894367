@@ -295,13 +295,20 @@ fun CardButton(onClick: () -> Unit, text: String, modifier: Modifier = Modifier)
 @Composable
 fun IconCard(
     action: () -> Unit, resId: Int, modifier: Modifier = Modifier,
-    enabled: Boolean = true, containerColor: Color = Color.Unspecified
+    enabled: Boolean = true, containerColor: Color = Color.Unspecified,
+    contentDescription: String? = null
 ) {
     val colors = if (containerColor == Color.Unspecified) CardDefaults.elevatedCardColors()
     else CardDefaults.elevatedCardColors(containerColor = containerColor)
     ElevatedCard(modifier = Modifier.size(48.dp), enabled = enabled, onClick = action, colors = colors) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Icon(painter = painterResource(resId), contentDescription = null, modifier = modifier)
+            // The card is clickable, so it merges its children: a description on the icon is what a
+            // screen reader announces for the button. Without one every icon button is just "button".
+            Icon(
+                painter = painterResource(resId),
+                contentDescription = contentDescription,
+                modifier = modifier
+            )
         }
     }
 }

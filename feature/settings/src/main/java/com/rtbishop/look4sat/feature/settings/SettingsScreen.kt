@@ -253,8 +253,16 @@ private fun SettingsScreen(
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    IconCard(action = { safeOpenUri(licenseUrl) }, resId = R.drawable.ic_license)
-                    IconCard(action = { safeOpenUri(privacyUrl) }, resId = R.drawable.ic_policy)
+                    IconCard(
+                        action = { safeOpenUri(licenseUrl) },
+                        resId = R.drawable.ic_license,
+                        contentDescription = stringResource(R.string.cd_license)
+                    )
+                    IconCard(
+                        action = { safeOpenUri(privacyUrl) },
+                        resId = R.drawable.ic_policy,
+                        contentDescription = stringResource(R.string.cd_privacy)
+                    )
                 }
             } else {
                 TopBar {
@@ -278,8 +286,16 @@ private fun SettingsScreen(
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    IconCard(action = { safeOpenUri(licenseUrl) }, resId = R.drawable.ic_license)
-                    IconCard(action = { safeOpenUri(privacyUrl) }, resId = R.drawable.ic_policy)
+                    IconCard(
+                        action = { safeOpenUri(licenseUrl) },
+                        resId = R.drawable.ic_license,
+                        contentDescription = stringResource(R.string.cd_license)
+                    )
+                    IconCard(
+                        action = { safeOpenUri(privacyUrl) },
+                        resId = R.drawable.ic_policy,
+                        contentDescription = stringResource(R.string.cd_privacy)
+                    )
                 }
             }
         }

@@ -240,13 +240,15 @@ internal fun SstvPage(
                 // Reset button — clears decoder state and image
                 IconCard(
                     action = { onAction(RadarAction.SstvReset) },
-                    resId = R.drawable.ic_delete
+                    resId = R.drawable.ic_delete,
+                    contentDescription = stringResource(R.string.cd_clear)
                 )
                 // Save button — always visible, enabled when there are pixels
                 IconCard(
                     action = requestSaveImage,
                     resId = R.drawable.ic_save,
-                    enabled = sstv.currentFrame?.imagePixels != null && !sstv.isSaving
+                    enabled = sstv.currentFrame?.imagePixels != null && !sstv.isSaving,
+                    contentDescription = stringResource(R.string.cd_save)
                 )
                 // Record / Stop button
                 val playAction = {
@@ -262,7 +264,12 @@ internal fun SstvPage(
                 val playIcon = if (sstv.status == SstvStatus.Recording) R.drawable.ic_pause else R.drawable.ic_play
                 ElevatedCard(modifier = Modifier.size(48.dp), onClick = playAction, colors = playColors) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Icon(painter = painterResource(playIcon), contentDescription = null)
+                        Icon(
+                            painter = painterResource(playIcon),
+                            contentDescription = stringResource(
+                                if (sstv.status == SstvStatus.Recording) R.string.cd_stop else R.string.cd_record
+                            )
+                        )
                     }
                 }
             }
