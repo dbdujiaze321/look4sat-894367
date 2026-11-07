@@ -58,7 +58,17 @@ internal fun Project.setupAndroidApp() {
         namespace = libs.versions.packageName.get()
         compileSdk = libs.versions.compileSdk.get().toInt()
         defaultConfig {
-            applicationId = libs.versions.packageName.get()
+            // The application id is the upstream one, because this tree is a fork of it and a
+            // build from source should behave like the program it was forked from. Publishing
+            // under that id collides with the upstream listing, so both can be overridden per
+            // build without touching this file:
+            //
+            //   ./gradlew :app:assembleRelease -Plook4sat.applicationId=org.example.look4sat
+            //
+            // Changing it makes the app a separate install on the device, with no upgrade path
+            // from the current one, which is why it is not the default.
+            applicationId = providers.gradleProperty("look4sat.applicationId").orNull
+                ?: libs.versions.packageName.get()
             minSdk = libs.versions.minSdk.get().toInt()
             versionCode = libs.versions.appVersionCode.get().toInt()
             versionName = libs.versions.appVersionName.get()

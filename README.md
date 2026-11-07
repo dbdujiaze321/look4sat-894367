@@ -94,7 +94,18 @@ keyPassword=...
 ```
 
 Without that file the release build still succeeds and produces an **unsigned**
-APK, so a clean checkout builds out of the box. Never commit the keystore or its
+APK, so a clean checkout builds out of the box.
+
+The application id defaults to `com.rtbishop.look4sat`, the upstream one: the
+program is the same program, so a source build behaves like it. Publishing under
+that id is not possible on Google Play (the listing belongs to upstream) and
+installing it over an upstream build fails, because the signing key differs. To
+build with your own id — which makes the app a separate install, with no upgrade
+path from the current one — pass it per build, no file edits needed:
+
+```bash
+./gradlew :app:assembleRelease -Plook4sat.applicationId=org.example.look4sat
+``` Never commit the keystore or its
 password file; `.gitignore` excludes both.
 
 Release builds run R8 in full mode with aggressive renaming
