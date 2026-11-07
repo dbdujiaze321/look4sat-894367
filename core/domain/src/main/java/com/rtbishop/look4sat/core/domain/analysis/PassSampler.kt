@@ -158,7 +158,18 @@ object PassSampler {
         samples: List<PassSample>
     ): PassMetrics {
         require(samples.isNotEmpty()) { "metrics() needs at least one sample" }
-        val tca = refineClosestApproach(obj, station, aosTime, losTime)
+        // A low-earth pass is a single hump, so the closest approach can be searched over the whole
+        // window. A deep-space pass spans a day or more and the range oscillates with the orbit —
+        // searching that window directly lands wherever the oscillations happen to guide it. Bracket
+        // the refinement around the sampled minimum, which is unimodal for both families.
+        val closestIndex = samples.indices.minByOrNull { samples[it].rangeKm } ?: 0
+        val bracketStart = samples[(closestIndex - 1).coerceAtLeast(0)].time
+        val bracketEnd = samples[(closestIndex + 1).coerceAtMost(samples.lastIndex)].time
+        val tca = if (bracketEnd > bracketStart) {
+            refineClosestApproach(obj, station, bracketStart, bracketEnd)
+        } else {
+            samples[closestIndex].time
+        }
         val atTca = obj.getFullPosition(station, tca)
         val peakRate = samples.maxOf { abs(it.rangeRateKmS) }
         return PassMetrics(

@@ -130,14 +130,4 @@ class DopplerPlanTest {
         assertNull(plan[0].uplinkHz)
         assertTrue(plan[0].downlinkHz!! < plan[1].downlinkHz!!)
     }
-
-    @Test
-    fun `peak deviation scales with the largest range rate`() {
-        val plan = listOf(
-            DopplerPoint(0L, 145_800_000L, null),
-            DopplerPoint(1L, 145_803_000L, null),
-            DopplerPoint(2L, 145_797_000L, null)
-        )
-        assertEquals(3_000L, DopplerPlan.peakDeviationHz(plan, 145_800_000L))
-    }
 }

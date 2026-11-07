@@ -85,9 +85,6 @@ data class OrbitElements(
     /** Perigee is below the sensible atmosphere, so the element set describes a doomed object. */
     val isDecaying: Boolean get() = perigeeAltitudeKm < 200.0
 
-    /** Half the time between successive equator crossings, in minutes. */
-    val minutesPerNodeCrossing: Double get() = periodMinutes / 2.0
-
     companion object {
         private const val MU = 398600.4418 // km^3 / s^2
         private const val EARTH_RADIUS_KM = 6378.137

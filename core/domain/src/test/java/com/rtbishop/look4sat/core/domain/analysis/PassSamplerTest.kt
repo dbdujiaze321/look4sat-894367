@@ -125,6 +125,42 @@ class PassSamplerTest {
     }
 
     @Test
+    fun `a deep space pass finds the closest approach near the sampled minimum`() {
+        // A geostationary pass spans two days and the range oscillates with the orbit, so an
+        // unbracketed search over the whole window wanders off. The metrics must land on the sample
+        // minimum instead.
+        val geo = OrbitalData(
+            name = "GEO TEST",
+            epoch = 26310.0,
+            meanmo = 1.0027,
+            eccn = 0.0001,
+            incl = 0.05,
+            raan = 95.0,
+            argper = 0.0,
+            meanan = 0.0,
+            catnum = 99999,
+            bstar = 0.0
+        )
+        val deepSpace = geo.getObject()
+        val geoStation = GeoPos(0.0, 95.0, 0.0)
+        val start = 315_446_400_000L + (geo.epochDaynum * 86_400_000.0).toLong()
+        val end = start + 2 * 86_400_000L
+        val samples = PassSampler.sample(deepSpace, geoStation, start, end, count = 25)
+        val metrics = PassSampler.metrics(deepSpace, geoStation, start, end, samples)
+
+        val closest = samples.minByOrNull { it.rangeKm }!!
+        val stepMillis = (end - start) / (samples.size - 1)
+        assertTrue(
+            "TCA ${metrics.tcaTime} should sit within one sample of the sampled minimum ${closest.time}",
+            abs(metrics.tcaTime - closest.time) <= stepMillis * 2
+        )
+        assertTrue(
+            "max elevation ${metrics.maxElevationDeg} should match the sampled curve",
+            abs(metrics.maxElevationDeg - samples.maxOf { it.elevationDeg }) < 1.0
+        )
+    }
+
+    @Test
     fun `degenerate windows produce nothing instead of throwing`() {
         assertTrue(PassSampler.sample(satellite, station, 1000L, 1000L).isEmpty())
         assertTrue(PassSampler.sample(satellite, station, 2000L, 1000L).isEmpty())

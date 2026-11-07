@@ -29,7 +29,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.rtbishop.look4sat.core.domain.model.ThemeOverrides
 import com.rtbishop.look4sat.core.domain.repository.IContainerProvider
@@ -47,7 +46,6 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         observeNightFilterState()

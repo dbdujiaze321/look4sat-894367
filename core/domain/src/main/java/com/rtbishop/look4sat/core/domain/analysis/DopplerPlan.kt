@@ -106,12 +106,4 @@ object DopplerPlan {
             )
         }
     }
-
-    /** Largest absolute excursion across a plan, for scaling a chart axis. */
-    fun peakDeviationHz(plan: List<DopplerPoint>, nominalHz: Long?): Long {
-        if (nominalHz == null) return 0L
-        val values = plan.mapNotNull { it.downlinkHz ?: it.uplinkHz }
-        if (values.isEmpty()) return 0L
-        return values.maxOf { kotlin.math.abs(it - nominalHz) }
-    }
 }

@@ -47,7 +47,11 @@ data class PassStatistics(
             if (passes.isEmpty()) {
                 return PassStatistics(0, 0, 0, 0.0, 0.0, 0, emptyList())
             }
-            val durations = passes.map { (it.losTime - it.aosTime).coerceAtLeast(0L) / 1000 }
+            // A deep-space "pass" is a placeholder window of plus/minus one day, not an observing
+            // opportunity: counting its 48 hours as visible time made a single geostationary satellite
+            // dominate the total. Pass counts still include them; durations do not.
+            val timedPasses = passes.filterNot { it.isDeepSpace }
+            val durations = timedPasses.map { (it.losTime - it.aosTime).coerceAtLeast(0L) / 1000 }
             val elevations = passes.map { it.maxElevation }.sorted()
             val buckets = HashMap<Long, MutableList<OrbitalPass>>()
             for (pass in passes) {
@@ -60,7 +64,7 @@ data class PassStatistics(
                     DayBucket(
                         dayStartMillis = dayStart,
                         passCount = dayPasses.size,
-                        visibleSeconds = dayPasses.sumOf {
+                        visibleSeconds = dayPasses.filterNot { it.isDeepSpace }.sumOf {
                             (it.losTime - it.aosTime).coerceAtLeast(0L) / 1000
                         }
                     )
@@ -71,7 +75,7 @@ data class PassStatistics(
                 visibleSeconds = durations.sum(),
                 medianMaxElevationDeg = median(elevations),
                 bestElevationDeg = elevations.last(),
-                longestPassSeconds = durations.max(),
+                longestPassSeconds = durations.maxOrNull() ?: 0L,
                 days = days
             )
         }

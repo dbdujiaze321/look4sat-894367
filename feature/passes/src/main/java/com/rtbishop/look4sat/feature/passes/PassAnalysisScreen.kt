@@ -152,8 +152,14 @@ private fun AnalysisHeader(state: PassAnalysisState, navigateUp: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurface
             )
             state.elements?.let { elements ->
+                val decayingSuffix = if (elements.isDecaying) {
+                    " · " + stringResource(R.string.analysis_decaying)
+                } else {
+                    ""
+                }
                 Text(
-                    text = "${pass?.catNum ?: 0} · ${stringResource(elements.orbitalClass.labelRes())}",
+                    text = "${pass?.catNum ?: 0} · ${stringResource(elements.orbitalClass.labelRes())}" +
+                        decayingSuffix,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -217,8 +223,12 @@ private fun AnalysisContent(
     val metrics = state.metrics
     // Assigned to a named val on purpose: `apply { ... }` followed by a lambda on the next line is
     // parsed as a second argument list, and the formatter would be invoked instead of returned.
-    val timeLabel: (Long) -> String = remember(state.isUtc) {
-        val format = SimpleDateFormat("HH:mm:ss", displayLocale())
+    val isDeepSpace = pass.isDeepSpace
+    val timeLabel: (Long) -> String = remember(state.isUtc, isDeepSpace) {
+        // A geostationary "pass" is a two day window, so the clock time repeats itself at both ends;
+        // the date has to be part of the label or AOS and LOS look identical.
+        val pattern = if (isDeepSpace) "MM-dd HH:mm" else "HH:mm:ss"
+        val format = SimpleDateFormat(pattern, displayLocale())
         format.timeZone = if (state.isUtc) TimeZone.getTimeZone("UTC") else TimeZone.getDefault()
         val label: (Long) -> String = { time -> format.format(Date(time)) }
         label
@@ -229,7 +239,13 @@ private fun AnalysisContent(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         if (metrics != null) {
-            item { GeometryCard(metrics = metrics, timeLabel = timeLabel) }
+            item {
+                GeometryCard(
+                    metrics = metrics,
+                    timeLabel = timeLabel,
+                    isDeepSpace = isDeepSpace
+                )
+            }
         }
         state.elements?.let { item { OrbitCard(elements = it) } }
         if (state.samples.size >= 2 && metrics != null) {
@@ -257,7 +273,15 @@ private fun AnalysisContent(
                     }
                 }
             }
-            item { SamplesCard(samples = state.samples, timeLabel = timeLabel) }
+            item {
+                SamplesCard(
+                    samples = state.samples,
+                    timeLabel = timeLabel,
+                    timeHeader = stringResource(
+                        if (state.isUtc) R.string.analysis_time_utc else R.string.analysis_time_local
+                    )
+                )
+            }
         }
         state.statistics?.let { item { StatisticsCard(statistics = it, onFocus = onFocusSatellite) } }
         item { Spacer(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) }
@@ -283,7 +307,7 @@ private fun SectionCard(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun GeometryCard(metrics: PassMetrics, timeLabel: (Long) -> String) {
+private fun GeometryCard(metrics: PassMetrics, timeLabel: (Long) -> String, isDeepSpace: Boolean) {
     SectionCard(title = stringResource(R.string.analysis_geometry)) {
         MetricPair(
             stringResource(R.string.analysis_aos) to timeLabel(metrics.aosTime),
@@ -291,7 +315,11 @@ private fun GeometryCard(metrics: PassMetrics, timeLabel: (Long) -> String) {
         )
         MetricPair(
             stringResource(R.string.analysis_tca) to timeLabel(metrics.tcaTime),
-            stringResource(R.string.analysis_duration) to formatDuration(metrics.durationSeconds)
+            stringResource(R.string.analysis_duration) to if (isDeepSpace) {
+                stringResource(R.string.analysis_always_visible)
+            } else {
+                formatDuration(metrics.durationSeconds)
+            }
         )
         MetricPair(
             stringResource(R.string.analysis_max_elev) to "${formatDegrees(metrics.maxElevationDeg)}°",
@@ -382,7 +410,10 @@ private fun DopplerCard(
                     metrics = metrics,
                     reference = reference,
                     uplinkReference = state.selectedRadio?.uplinkLow
-                        ?: state.selectedRadio?.uplinkHigh
+                        ?: state.selectedRadio?.uplinkHigh,
+                    // A beacon has a downlink only; inventing a receive offset for it would print a
+                    // number derived from the wrong frequency.
+                    downlinkAvailable = state.plan.firstOrNull()?.downlinkHz != null
                 )
             }
         }
@@ -402,7 +433,8 @@ private fun DopplerTable(
     plan: List<DopplerPoint>,
     metrics: PassMetrics,
     reference: Long,
-    uplinkReference: Long?
+    uplinkReference: Long?,
+    downlinkAvailable: Boolean
 ) {
     val rows = listOf(
         stringResource(R.string.analysis_aos) to metrics.aosTime,
@@ -417,7 +449,7 @@ private fun DopplerTable(
         }
         rows.forEach { (label, time) ->
             val atTca = time == metrics.tcaTime
-            val rxDelta = if (atTca) {
+            val rxDelta = if (atTca && downlinkAvailable) {
                 DopplerPlan.correctedDownlinkHz(reference, metrics.rangeRateAtTcaKmS) - reference
             } else {
                 nearest(plan, time)?.downlinkHz?.minus(reference)
@@ -426,7 +458,7 @@ private fun DopplerTable(
             // on a cross-band transponder the two are hundreds of megahertz apart and subtracting
             // the downlink would print a meaningless five digit number.
             val txDelta = uplinkReference?.let { uplink ->
-                if (atTca) {
+                if (atTca && downlinkAvailable) {
                     DopplerPlan.correctedUplinkHz(uplink, metrics.rangeRateAtTcaKmS) - uplink
                 } else {
                     nearest(plan, time)?.uplinkHz?.minus(uplink)
@@ -445,7 +477,7 @@ private fun nearest(plan: List<DopplerPoint>, time: Long): DopplerPoint? =
     plan.minByOrNull { abs(it.time - time) }
 
 @Composable
-private fun SamplesCard(samples: List<PassSample>, timeLabel: (Long) -> String) {
+private fun SamplesCard(samples: List<PassSample>, timeLabel: (Long) -> String, timeHeader: String) {
     // One row per minute at most: the chart carries the shape, and a hundred rows of numbers on a
     // phone is a scroll bar, not a table.
     val rows = remember(samples) {
@@ -454,7 +486,7 @@ private fun SamplesCard(samples: List<PassSample>, timeLabel: (Long) -> String) 
     }
     SectionCard(title = stringResource(R.string.analysis_samples)) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            TableCell("UTC", weight = 1.1f, isHeader = true)
+            TableCell(timeHeader, weight = 1.1f, isHeader = true)
             TableCell("Az", weight = 0.8f, isHeader = true)
             TableCell("El", weight = 0.8f, isHeader = true)
             TableCell("km", weight = 1f, isHeader = true)

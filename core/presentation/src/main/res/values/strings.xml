@@ -458,4 +458,11 @@
     <string name="cd_add">Add</string>
     <string name="cd_license">License</string>
     <string name="cd_privacy">Privacy policy</string>
+
+    <string name="analysis_time_utc">UTC</string>
+    <string name="analysis_time_local">Local</string>
+
+    <string name="analysis_decaying">decaying</string>
+
+    <string name="analysis_always_visible">always</string>
 </resources>

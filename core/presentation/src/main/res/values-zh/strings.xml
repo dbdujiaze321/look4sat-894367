@@ -407,4 +407,11 @@
     <string name="cd_add">添加</string>
     <string name="cd_license">许可证</string>
     <string name="cd_privacy">隐私政策</string>
+
+    <string name="analysis_time_utc">UTC</string>
+    <string name="analysis_time_local">本地</string>
+
+    <string name="analysis_decaying">再入中</string>
+
+    <string name="analysis_always_visible">常驻可见</string>
 </resources>

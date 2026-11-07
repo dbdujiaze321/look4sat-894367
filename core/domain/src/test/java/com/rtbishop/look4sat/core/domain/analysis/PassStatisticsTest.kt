@@ -94,6 +94,32 @@ class PassStatisticsTest {
     }
 
     @Test
+    fun `a deep space window does not inflate the visible time`() {
+        // The GEO pass is a plus/minus one day placeholder: counting its 48 hours made a single
+        // satellite look like the whole catalogue's observing time.
+        val day0 = 10 * dayMillis
+        val geo = pass(3, day0, 0, 48 * 60, 23.0).copy(
+            orbitalObject = OrbitalData(
+                name = "GEO",
+                epoch = 26001.0,
+                meanmo = 1.0027,
+                eccn = 0.0001,
+                incl = 0.05,
+                raan = 0.0,
+                argper = 0.0,
+                meanan = 0.0,
+                catnum = 3,
+                bstar = 0.0
+            ).getObject()
+        )
+        val stats = PassStatistics.from(listOf(pass(1, day0, 0, 10, 20.0), geo))
+        assertEquals(2, stats.passCount)
+        assertEquals(2, stats.satelliteCount)
+        assertEquals(10 * 60L, stats.visibleSeconds)
+        assertEquals(10 * 60L, stats.longestPassSeconds)
+    }
+
+    @Test
     fun `median of an even count averages the middle pair`() {
         val day0 = 10 * dayMillis
         val passes = listOf(

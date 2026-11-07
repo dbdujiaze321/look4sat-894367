@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launch window: the mascot art as a rounded square on the app background.
+
+  Deliberately not the SplashScreen compat library: that draws the icon inside a circular mask on
+  every version below 31, which crops a square piece of art into a circle. A plain windowBackground
+  is drawn exactly as authored, on every API level.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/background" />
+    <item
+        android:width="288dp"
+        android:height="288dp"
+        android:gravity="center">
+        <bitmap
+            android:gravity="fill"
+            android:src="@drawable/splash_icon" />
+    </item>
+</layer-list>
