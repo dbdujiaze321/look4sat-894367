@@ -43,11 +43,19 @@ jobs:
 
       # The orbital kernel, the parsers and the drift model are pure JVM code, so the
       # whole test suite runs here without a device or an emulator.
+      # gradle.properties asks for a 6g daemon, which is right for a workstation but too
+      # much for the hosted runner: the JVM then thrashes and Gradle aborts with
+      # "the JVM garbage collector is thrashing". Cap it here rather than lowering the
+      # project value, which would slow local release builds down.
       - name: Unit tests
-        run: ./gradlew :core:domain:test :core:data:test
+        run: >-
+          ./gradlew :core:domain:test :core:data:test
+          -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
 
       - name: Debug build
-        run: ./gradlew :app:assembleDebug
+        run: >-
+          ./gradlew :app:assembleDebug
+          -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
