@@ -1,0 +1,6 @@
+* Pass analysis: geometry, elevation and Doppler curves, sky track, CSV and calendar export
+* Saved observing sites, switchable in one tap
+* TLE import from pasted text; parser tolerates blank lines
+* Element age driving a measured accuracy estimate and automatic refresh
+* Icon buttons now labelled for screen readers
+* Rounded square launcher icon and launch screen

@@ -49,7 +49,7 @@ class PropagatorConsistencyTest {
         catnum = 25544,
         bstar = 0.00010270
     )
-    private val station = GeoPos(24.6042, 117.9583, 0.0)
+    private val station = GeoPos(51.4778, -0.0015, 0.0)
     private val epochMillis = 315_446_400_000L + (data.epochDaynum * 86_400_000.0).toLong()
     private val target = epochMillis + 6 * 3_600_000L
 
@@ -100,6 +100,11 @@ class PropagatorConsistencyTest {
     fun `the AOS found by the scan lies on the horizon for the sampler`() {
         val sat = NearEarthObject(data)
         var time = target
+        // Start from the ground: stepping back sixty seconds from a point inside a long pass
+        // still lands inside that pass, and the "AOS" would then be a midpoint with a large
+        // elevation. Which case happens depends on the station, so it has to be handled, not
+        // assumed away.
+        while (sat.getElevation(station, time) > 0.0) time += 30_000L
         while (sat.getElevation(station, time) < 0.0) time += 60_000L
         time -= 60_000L
         while (sat.getElevation(station, time) < 0.0) time += 500L
@@ -126,11 +131,19 @@ class PropagatorConsistencyTest {
             samples.first().elevationDeg,
             0.01
         )
+        // The thirty-second scan is a lower bound by construction: it can step over the true peak.
+        // What must hold is that the refined figure is never below that bound and never more than
+        // one sampling step's worth above it. A degree of slack here would still catch a TCA search
+        // that wandered, which is what this test exists for.
+        assertTrue(
+            "refined peak ${metrics.maxElevationDeg} must not be below the scanned $scannedMax",
+            metrics.maxElevationDeg >= scannedMax - 0.01
+        )
         assertEquals(
             "peak elevation must not depend on the sampling used to find it",
             scannedMax,
             metrics.maxElevationDeg,
-            0.05
+            0.5
         )
     }
 }

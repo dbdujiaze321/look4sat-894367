@@ -1,0 +1,224 @@
+# NOTICE — attribution, modifications and disclaimer
+
+This file covers three things the licence text cannot: who wrote the original
+program, what this fork changed, and the disclaimers that apply to this build.
+It is not a replacement for `LICENSE`; it is read together with it.
+
+---
+
+## 1. Original work
+
+**Look4Sat — radio satellite tracker and pass predictor for Android**
+
+    Copyright (C) 2019-2026 Arty Bishop and contributors
+
+    Upstream project:  https://github.com/rt-bishop/Look4Sat
+    Upstream releases: https://github.com/rt-bishop/Look4Sat/releases
+    Google Play:       https://play.google.com/store/apps/details?id=com.rtbishop.look4sat
+    F-Droid:           https://f-droid.org/packages/com.rtbishop.look4sat/
+
+Look4Sat is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version. The full licence text is in `LICENSE`.
+
+The original program, its architecture, its user interface and its orbital
+mechanics are the work of Arty Bishop and the Look4Sat contributors. Nothing in
+this fork should be read as a claim of authorship over that work.
+
+The names "Look4Sat", "Gpredict" and the logos and store badges of Google Play,
+F-Droid, AMSAT, Celestrak, SatNOGS and OSCAR belong to their respective owners
+and are used here only to refer to those projects and services.
+
+---
+
+## 2. This fork
+
+**Look4Sat 4.4.9, modified; maintained by BA7OPF <ba7opf@users.noreply.github.com>.**
+
+The base of this tree is upstream tag 4.4.9 (commit history starts at
+`chore: import Look4Sat 4.4.9 upstream and port stage 1-3 groundwork`).
+Everything below was added or changed on top of that tag.
+
+### 2.1 Pass analysis
+
+* New full-screen pass analysis, opened from the chart icon on a pass row.
+  Geometry (AOS, TCA, LOS, max elevation, azimuth at TCA, min range, peak range
+  rate, azimuth sweep, sunlit fraction), orbital elements, an elevation profile,
+  a Doppler plan, a polar sky track and a sampling table, all drawn on a Compose
+  `Canvas` with no charting dependency.
+* Closest approach is refined by ternary search to ±100 ms instead of taking the
+  best sample, and the search is bracketed around the sampled minimum so a
+  two-day deep-space window cannot send it wandering.
+* Transponder Doppler uses a scaled inverting mapping
+  `tx = upHigh - (rx - downLow) * (upWidth / downWidth)`, which reduces to the
+  usual sum rule only when both bands are equally wide.
+* CSV export: RFC 4180 quoting, UTC ISO 8601 timestamps, metadata in comment
+  lines so the file has exactly one header row.
+* Calendar export (`.ics`): RFC 5545, CRLF line endings, `VALARM` lead time
+  reusing the pass-alarm setting.
+* "Track only this satellite" action that reduces the selection to one object.
+
+### 2.2 Data handling
+
+* Saved observing sites (`StationBook`): named coordinates with a derived
+  Maidenhead locator, stored as JSON, switchable in one tap. Switching moves the
+  station position and the active id in a single write.
+* TLE import from pasted text, through the same parser and merge
+  rules as file import, so a stale paste cannot overwrite fresher elements.
+* TLE parser rewritten to scan for `1`/`2` pairs instead of chunking raw lines
+  by three: one blank line in a pasted TLE used to shift every following block
+  and silently discard the rest of the file.
+* CSV reader now honours RFC 4180 quoting; `"CSS, (TIANHE)"` used to shift every
+  following column by one.
+* Catalogue export as CSV, written with the importer's own column names so the
+  file round-trips instead of being a one-way report.
+* A self-trained staleness model (below) and an accuracy budget that triggers a
+  data refresh when predicted pass-time error exceeds ten seconds.
+
+### 2.3 Accuracy work
+
+* A power-law model of prediction error against element age,
+  `sigma(age) = 0.0208 * age^2.726` seconds, fitted to thirteen measurements of
+  two real ISS element sets 8.32 days apart. Residual: 6% mean, 13% worst case.
+* The coefficients are retrained on device: every time an element set is
+  replaced by a newer one, the old set's along-track error at the new epoch
+  becomes one labelled sample, and a closed-form log-log regression refits the
+  model. Only tracked satellites are measured.
+* Workbench and analysis screen show the predicted error next to the data age;
+  the value turns red past the ten-second budget.
+* Deep-space correctness fixes: statistics no longer count a geostationary
+  ±24 hour placeholder window as 48 hours of visible time; deep-space AOS/LOS
+  labels carry the date instead of repeating the same clock time.
+
+### 2.4 UI and accessibility
+
+* Workbench landing page: next pass countdown, best passes in the next 24 hours,
+  data freshness, window statistics.
+* Per-token theme overrides with JSON import/export, grouped satellite list with
+  category icons.
+* `IconCard` gained a `contentDescription` parameter; before this, every icon
+  button in the app was announced as "button" by screen readers.
+* Launcher icon and launch screen are rounded squares. Adaptive icons were
+  removed and the SplashScreen compat library was dropped, because it masks the
+  icon to a circle on every API level below 31.
+* Chinese localisation for all strings added by this fork.
+
+### 2.5 Build and tests
+
+* Version catalog, convention plugins, R8 rules, and a release signing config
+  read from `keystore.properties` that is absent on a clean checkout (the build
+  then produces an unsigned APK rather than failing).
+* 202 unit tests in `core:domain` and 41 in `core:data`. The orbital kernel, the
+  merge engine, the alarm policy, the drift/statistics maths and the CSV/ICS
+  writers are pure JVM code and are covered without a device.
+* `PropagatorConsistencyTest` pins down two properties that were previously
+  only assumed: results do not depend on query order (cold, warm, forwards,
+  backwards within 1e-6 degrees), and the AOS found by the pass scan sits on the
+  horizon for the sampler as well.
+
+### 2.6 What this fork did not do
+
+* No proprietary or closed-source component was added. There is no analytics,
+  no telemetry, no advertising and no network call other than the element-set
+  downloads the user triggers or that the configured auto-update performs.
+* The absolute accuracy of SGP4 against a precise ephemeris is still unverified:
+  no public precise-ephemeris source was reachable from the build environment,
+  so no "one arcsecond" claim is made anywhere in this tree.
+
+---
+
+## 3. Third-party components
+
+The build depends on the following, each under its own licence. Their licence
+texts are shipped inside the corresponding artefacts and are not reproduced here.
+
+| Component | Licence |
+|---|---|
+| AndroidX, Jetpack Compose, Room, Navigation 3, Lifecycle | Apache License 2.0 |
+| Kotlin, kotlinx.coroutines, kotlinx.serialization | Apache License 2.0 |
+| OkHttp | Apache License 2.0 |
+| osmdroid | Apache License 2.0 |
+| Detekt (build only) | Apache License 2.0 |
+
+Element sets are downloaded from Celestrak and SatNOGS at the user's request.
+Those services are independent of this project and are not affiliated with it.
+
+---
+
+## 4. Disclaimer
+
+### 4.1 No warranty
+
+THE PROGRAM IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS, COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE PROGRAM OR THE USE OR OTHER DEALINGS IN
+THE PROGRAM. This restates sections 15 and 16 of the GNU GPL v3, which govern.
+
+### 4.2 Orbital predictions are estimates
+
+Pass times, elevations, azimuths, ranges, range rates, Doppler offsets and
+satellite positions computed by this program are **estimates** derived from
+public two-line element sets through the SGP4/SDP4 model. Their error grows with
+the age of the element set, with atmospheric density and with unmodelled
+manoeuvres. Measured against a real element set, the along-track error reaches
+approximately 46 km at 8 days, 292 km at 15 days and 1.45 Mm at 28 days, which
+corresponds to roughly 6, 38 and 188 seconds of pass-time error.
+
+Do not use this program, or any output of it, for:
+
+* navigation, attitude control, antenna autotracking of a safety-critical link,
+  or any use where a wrong angle or time can cause injury or damage;
+* collision avoidance, conjunction assessment or space-traffic coordination;
+* radio licensing examinations, regulatory filings or interference complaints;
+* any application requiring certified or precise ephemerides.
+
+Precise orbit determination requires precise ephemerides, which this program
+does not use and does not claim to approximate.
+
+### 4.3 Third-party data
+
+Element sets and transceiver data come from Celestrak and SatNOGS. Their
+accuracy, availability, completeness and timeliness are outside the control of
+this project. A satellite can be re-entered, manoeuvred, renamed or removed from
+the catalogue without notice, and the program will keep predicting passes for it
+until the data is refreshed.
+
+### 4.4 Radio operation is the operator's responsibility
+
+This program can compute Doppler-corrected frequencies and can drive rotators
+and radios over Bluetooth or network interfaces. Transmitting is a regulated
+activity: you are responsible for holding the appropriate licence, for operating
+within the frequencies, power levels and modes your licence permits, and for
+complying with the regulations of your country. Nothing in this program grants
+any authority to transmit, and the authors accept no responsibility for
+interference, unauthorised transmission or regulatory breach caused by use of
+this program.
+
+### 4.5 Location data
+
+Station coordinates, saved sites, preferences and the element database are stored
+locally on the device. This build contains no analytics, no crash reporting, no
+advertising identifier and no telemetry of any kind. The only outbound traffic is
+element-set and transceiver downloads from the sources listed in section 4.3,
+plus any rotator or radio connection the user configures.
+
+### 4.6 No affiliation
+
+This fork is not affiliated with, endorsed by or sponsored by Arty Bishop, the
+Look4Sat upstream project, AMSAT, Celestrak, SatNOGS, Google or the F-Droid
+project. All trademarks remain the property of their respective owners.
+
+### 4.7 Indemnity
+
+You agree to indemnify and hold harmless the authors, copyright holders and
+contributors from any claim, demand, loss or expense, including reasonable legal
+fees, arising from your use of the program or your breach of these terms.
+
+### 4.8 Severability
+
+If any part of this notice is held unenforceable, the remaining parts stay in
+force. Where this notice and the GNU GPL v3 disagree, the GNU GPL v3 prevails.

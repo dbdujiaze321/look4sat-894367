@@ -1,0 +1,20 @@
+# Normalise line endings in the working tree so a Windows checkout and a Linux
+# build produce the same bytes for text files.
+* text=auto eol=lf
+
+# Gradle wrapper keeps its own line endings; converting it breaks the script on
+# one platform or the other.
+gradlew text eol=lf
+gradlew.bat text eol=crlf
+*.bat text eol=crlf
+
+# Binary assets: never diff, never convert.
+*.png binary
+*.jpg binary
+*.webp binary
+*.jks binary
+*.keystore binary
+*.p12 binary
+*.aab binary
+*.apk binary
+*.idsig binary

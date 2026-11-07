@@ -68,7 +68,7 @@ class AccuracyReportTest {
         ndot = 0.00012224
     )
 
-    private val station = GeoPos(24.6042, 117.9583, 0.0)
+    private val station = GeoPos(51.4778, -0.0015, 0.0)
     private val day = 86_400_000L
 
     private fun epochMillis(data: OrbitalData): Long =

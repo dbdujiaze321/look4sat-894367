@@ -24,7 +24,7 @@ import org.junit.Test
 
 class StationBookTest {
 
-    private fun station(id: String, name: String = "Home", lat: Double = 26.07, lon: Double = 119.30) =
+    private fun station(id: String, name: String = "Home", lat: Double = 35.68, lon: Double = 139.69) =
         SavedStation(id = id, name = name, latitude = lat, longitude = lon, altitudeMeters = 20.0)
 
     @Test
@@ -88,8 +88,8 @@ class StationBookTest {
 
     @Test
     fun `locator is derived from the coordinates`() {
-        // Fuzhou: 26.07 N, 119.30 E sits in grid square OL96 (field O/L, square 9/6).
-        assertTrue(station("a").locator.startsWith("OL96"))
+        // Tokyo: 35.68 N, 139.69 E sits in grid square PM95 (field P/M, square 9/5).
+        assertTrue(station("a").locator.startsWith("PM95"))
         assertEquals(6, station("a").locator.length)
     }
 

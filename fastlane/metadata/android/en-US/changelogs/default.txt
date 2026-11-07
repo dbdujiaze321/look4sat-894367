@@ -1,6 +1,6 @@
-* Added AOS/LOS timers to PassItem and NextPassRow components
-* Replaced Swipe-to-Filter functionality with a Search bar
-* Tweaked SSTV image saving flow, added permissions #264
-* Fixed linear Doppler calculator and offset restore #265
-* Corrected CelestialComputer moon calculations error #266
-* Added Look4Sat-rPi project ref to app Settings/README #267
+* Pass analysis: geometry, elevation and Doppler curves, sky track, CSV and calendar export
+* Saved observing sites, switchable in one tap
+* TLE import from pasted text; parser tolerates blank lines
+* Element age driving a measured accuracy estimate and automatic refresh
+* Icon buttons now labelled for screen readers
+* Rounded square launcher icon and launch screen

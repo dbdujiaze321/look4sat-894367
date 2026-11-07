@@ -71,6 +71,10 @@ internal fun Project.setupAndroidApp() {
             release {
                 isMinifyEnabled = true
                 isShrinkResources = true
+                isDebuggable = false
+                isJniDebuggable = false
+                isPseudoLocalesEnabled = false
+                isCrunchPngs = true
                 proguardFiles(
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard-rules.pro"
@@ -78,6 +82,12 @@ internal fun Project.setupAndroidApp() {
                 // Absent on a clean checkout: the build still produces an unsigned APK.
                 releaseSigning?.let { signingConfig = it }
             }
+        }
+        // Play's dependency metadata block is a plain-text list of every library and version the
+        // build pulled in — a free map of the app for anyone unpacking the APK.
+        dependenciesInfo {
+            includeInApk = false
+            includeInBundle = false
         }
         androidResources {
             generateLocaleConfig = true
