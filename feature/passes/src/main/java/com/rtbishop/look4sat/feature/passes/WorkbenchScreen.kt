@@ -224,6 +224,18 @@ private fun DataFreshnessCard(state: WorkbenchState, onRefresh: () -> Unit) {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 }
             )
+            state.errorSeconds?.let { seconds ->
+                Spacer(modifier = Modifier.height(spacing.extraExtraSmall))
+                Text(
+                    text = stringResource(R.string.workbench_error_budget, formatError(seconds)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (state.exceedsErrorBudget) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            }
             Spacer(modifier = Modifier.height(spacing.small))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Button(onClick = onRefresh, enabled = !state.isRefreshing) {
@@ -250,6 +262,13 @@ private fun DataFreshnessCard(state: WorkbenchState, onRefresh: () -> Unit) {
             }
         }
     }
+}
+
+/** Whole seconds read as noise below a second, and as a wall of digits above a minute. */
+private fun formatError(seconds: Double): String = when {
+    seconds < 0.5 -> "<0.5"
+    seconds < 10.0 -> String.format(Locale.US, "%.1f", seconds)
+    else -> String.format(Locale.US, "%.0f", seconds)
 }
 
 @Composable

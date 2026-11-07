@@ -20,6 +20,7 @@ package com.rtbishop.look4sat
 import android.app.Application
 import com.rtbishop.look4sat.alarm.PassAlarmScheduler
 import com.rtbishop.look4sat.core.data.injection.MainContainer
+import com.rtbishop.look4sat.core.domain.analysis.StalenessCalibration
 import com.rtbishop.look4sat.core.domain.repository.IContainerProvider
 import com.rtbishop.look4sat.core.domain.repository.IMainContainer
 import kotlinx.coroutines.flow.combine
@@ -69,10 +70,22 @@ class MainApplication : Application(), IContainerProvider {
         }
     }
 
+    /**
+     * Two independent reasons to refresh.
+     *
+     * The routine timer keeps the catalogue current. The accuracy budget is the promise this app
+     * makes about pass times: the staleness model knows what a given element age costs, and when it
+     * costs more than ten seconds the data is refreshed even if the timer has not fired — for
+     * instance after a long period without network.
+     */
     private suspend fun checkAutoUpdate(timeNow: Long = System.currentTimeMillis()) {
-        if (container.settingsRepo.otherSettings.value.stateOfAutoUpdate) {
+        val settings = container.settingsRepo.otherSettings.value
+        if (settings.stateOfAutoUpdate) {
             val timeDelta = timeNow - container.settingsRepo.databaseState.value.updateTimestamp
-            if (timeDelta > 172_800_000L) { // 48 hours in ms
+            val ageDays = timeDelta.toDouble() / 86_400_000.0
+            val calibration = StalenessCalibration.decode(settings.stalenessJson)
+            val overBudget = calibration.exceedsBudget(ageDays)
+            if (timeDelta > 172_800_000L || overBudget) { // 48 hours in ms
                 val sdf = SimpleDateFormat("d MMM yyyy - HH:mm:ss", Locale.getDefault())
                 println("Started periodic data update on ${sdf.format(Date())}")
                 container.databaseRepo.updateFromRemote()

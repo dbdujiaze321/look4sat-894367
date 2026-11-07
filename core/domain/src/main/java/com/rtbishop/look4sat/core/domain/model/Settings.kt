@@ -82,7 +82,9 @@ data class OtherSettings(
     /** Serialised [ThemeOverrides]; empty means "preset only". */
     val themeJson: String = "",
     /** Serialised [StationBook]: saved observing sites plus the active one. */
-    val stationsJson: String = ""
+    val stationsJson: String = "",
+    /** Serialised [com.rtbishop.look4sat.core.domain.analysis.StalenessCalibration]. */
+    val stalenessJson: String = ""
 )
 
 /**

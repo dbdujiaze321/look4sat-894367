@@ -20,6 +20,8 @@ package com.rtbishop.look4sat.core.data.repository
 import com.rtbishop.look4sat.core.data.database.entity.SatEntry
 import com.rtbishop.look4sat.core.domain.merge.TleMergeEngine
 import com.rtbishop.look4sat.core.domain.merge.TleSourceBatch
+import com.rtbishop.look4sat.core.domain.analysis.StalenessCalibration
+import com.rtbishop.look4sat.core.domain.analysis.StalenessModel
 import com.rtbishop.look4sat.core.domain.model.DatabaseState
 import com.rtbishop.look4sat.core.domain.predict.OrbitalData
 import com.rtbishop.look4sat.core.domain.repository.IDatabaseRepo
@@ -195,12 +197,44 @@ class DatabaseRepo(
     }
 
     /** Stores the entries that are newer than the ones already saved, renaming the rest in place. */
+    /**
+     * Turns every replaced element set into one labelled sample for the staleness model.
+     *
+     * When a newer set for a satellite arrives, the old set's error at the new epoch is measurable
+     * exactly: propagate both and project the difference on the velocity. That is the only ground
+     * truth this app can obtain offline, and it is free — the update already touched these rows.
+     *
+     * Only the satellites the operator actually tracks are measured. Measuring all seventeen
+     * thousand would cost two propagator constructions each on the update path for samples that
+     * describe nobody's pass list.
+     */
+    private suspend fun recordStalenessSamples(incoming: List<OrbitalData>) {
+        val tracked = settingsRepo.selectedIds.value.toSet()
+        if (tracked.isEmpty()) return
+        val candidates = incoming.filter { it.catnum in tracked }
+        if (candidates.isEmpty()) return
+        val storedByCatnum = localSource.getEntriesWithIds(candidates.map { it.catnum })
+            .associateBy { it.data.catnum }
+        var calibration = StalenessCalibration.decode(settingsRepo.otherSettings.value.stalenessJson)
+        var added = 0
+        for (entry in candidates) {
+            val old = storedByCatnum[entry.catnum]?.data ?: continue
+            val sample = StalenessModel.measure(old, entry) ?: continue
+            calibration = calibration.withSample(sample)
+            added++
+        }
+        if (added > 0) {
+            settingsRepo.updateOtherSettings { it.copy(stalenessJson = calibration.encode()) }
+        }
+    }
+
     private suspend fun insertFresherEntries(entries: List<OrbitalData>) {
         val storedEpochs = localSource.getEntriesEpochs()
         val (fresherEntries, staleEntries) = entries.partition { entry ->
             val storedEpoch = storedEpochs[entry.catnum]
             storedEpoch == null || entry.epochDaynum > OrbitalData.epochToDaynum(storedEpoch)
         }
+        recordStalenessSamples(fresherEntries)
         localSource.insertEntries(fresherEntries)
         // a reordered source list has to rename satellites right away, even the ones holding
         // elements that are newer than the ones just parsed

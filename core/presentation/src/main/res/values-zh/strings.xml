@@ -414,4 +414,10 @@
     <string name="analysis_decaying">再入中</string>
 
     <string name="analysis_always_visible">常驻可见</string>
+
+    <string name="workbench_error_budget">时刻精度 ±%1$s 秒</string>
+    <string name="analysis_error_budget">时刻精度</string>
+    <string name="analysis_error_value">±%1$s 秒</string>
+
+    <string name="analysis_error_samples">样本</string>
 </resources>

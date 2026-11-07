@@ -17,6 +17,7 @@
  */
 package com.rtbishop.look4sat.core.data.repository
 
+import com.rtbishop.look4sat.core.domain.analysis.StalenessCalibration
 import com.rtbishop.look4sat.core.domain.model.DataSourcesSettings
 import com.rtbishop.look4sat.core.domain.model.DatabaseState
 import com.rtbishop.look4sat.core.domain.model.OtherSettings
@@ -272,6 +273,52 @@ class DatabaseRepoTest {
         [{"uuid":"uuid-custom","description":"Local beacon","alive":true,"downlink_low":144800000,
         "mode":"FM","invert":false,"norad_cat_id":25544}]
     """.trimIndent().byteInputStream()
+
+    /** Real ISS elements from the device database on 2026-11-07, 8.32 days behind the next set. */
+    private val staleIss = OrbitalData(
+        name = "ISS (ZARYA)", epoch = 26302.56368278, meanmo = 15.49100842, eccn = 0.000705,
+        incl = 51.6333, raan = 355.1294, argper = 324.3141, meanan = 35.7375,
+        catnum = 25544, bstar = 0.00010765, ndot = 5.507e-05
+    )
+
+    private val issTleText = """
+        ISS (ZARYA)
+        1 25544U 98067A   26310.88530624  .00012224  00000+0  22778-3 0  9997
+        2 25544  51.6322 313.9479 0007239 356.4073   3.6863 15.49223765593878
+    """.trimIndent()
+
+    @Test
+    fun `replacing an element set records one training sample`() = runTest(dispatcher) {
+        val localSource = FakeLocalSource()
+        val settingsRepo = FakeSettingsRepo()
+        settingsRepo.selectedIds.value = listOf(25544)
+        localSource.insertedEntries += staleIss
+        val repository = DatabaseRepo(dispatcher, dataParser, localSource, FakeRemoteSource(), settingsRepo)
+
+        repository.updateTLEFromText(issTleText)
+
+        val calibration = StalenessCalibration.decode(settingsRepo.otherSettings.value.stalenessJson)
+        assertEquals(1, calibration.sampleCount)
+        // Measured with this app's propagator: 46.3 km along track at 7.66 km/s.
+        assertEquals(8.32, calibration.samples.first().ageDays, 0.02)
+        assertEquals(6.0, calibration.samples.first().seconds, 0.5)
+    }
+
+    @Test
+    fun `untracked satellites are not measured`() = runTest(dispatcher) {
+        // Seventeen thousand element sets are replaced on every update; measuring all of them would
+        // put two propagator constructions each on the update path for nobody's pass list.
+        val localSource = FakeLocalSource()
+        val settingsRepo = FakeSettingsRepo()
+        settingsRepo.selectedIds.value = listOf(59051)
+        localSource.insertedEntries += staleIss
+        val repository = DatabaseRepo(dispatcher, dataParser, localSource, FakeRemoteSource(), settingsRepo)
+
+        repository.updateTLEFromText(issTleText)
+
+        assertEquals("", settingsRepo.otherSettings.value.stalenessJson)
+    }
+
 }
 
 private const val radioAlive = """{"uuid":"uuid-alive","description":"Voice repeater","alive":true,
@@ -294,7 +341,6 @@ private class FakeRemoteSource : IRemoteSource {
 
     override suspend fun submitAmSatReport(payloadJson: String): Pair<Int, String>? = null
 }
-
 private class FakeLocalSource : ILocalSource {
     val insertedEntries = mutableListOf<OrbitalData>()
     val insertedRadios = mutableListOf<SatRadio>()
@@ -304,7 +350,12 @@ private class FakeLocalSource : ILocalSource {
 
     override suspend fun getEntriesList(): List<SatItem> = emptyList()
 
-    override suspend fun getEntriesWithIds(ids: List<Int>): List<OrbitalObject> = emptyList()
+    override suspend fun getEntriesWithIds(ids: List<Int>): List<OrbitalObject> =
+        insertedEntries.filter { it.catnum in ids }.map { it.getObject() }
+
+    override suspend fun markEntriesStale(ids: List<Int>) = Unit
+
+    override suspend fun clearStaleEntries(ids: List<Int>) = Unit
 
     override suspend fun getEntriesEpochs(): Map<Int, Double> =
         insertedEntries.associate { entry -> entry.catnum to entry.epoch }
@@ -357,7 +408,7 @@ private class FakeSettingsRepo(dataSources: DataSourcesSettings = defaultDataSou
     override val appVersionName: String = "test"
     override val appVersionCode: Long = 1L
 
-    override val selectedIds: StateFlow<List<Int>> = MutableStateFlow(emptyList())
+    override val selectedIds: MutableStateFlow<List<Int>> = MutableStateFlow(emptyList())
 
     override val selectedSatModes: StateFlow<List<String>> = MutableStateFlow(emptyList())
 
@@ -373,7 +424,7 @@ private class FakeSettingsRepo(dataSources: DataSourcesSettings = defaultDataSou
         RCSettings(false, "", "", "", false, "", "", "", 0L, false, "", "", "", false, "", "")
     )
 
-    override val otherSettings: StateFlow<OtherSettings> = MutableStateFlow(
+    override val otherSettings: MutableStateFlow<OtherSettings> = MutableStateFlow(
         OtherSettings(false, false, false, false, false, false, false, false)
     )
 
@@ -404,7 +455,9 @@ private class FakeSettingsRepo(dataSources: DataSourcesSettings = defaultDataSou
 
     override fun updateRCSettings(settings: RCSettings) = Unit
 
-    override fun updateOtherSettings(transform: (OtherSettings) -> OtherSettings) = Unit
+    override fun updateOtherSettings(transform: (OtherSettings) -> OtherSettings) {
+        otherSettings.value = transform(otherSettings.value)
+    }
 
     override fun updateDataSourcesSettings(settings: DataSourcesSettings) {
         dataSourcesSettings.value = settings

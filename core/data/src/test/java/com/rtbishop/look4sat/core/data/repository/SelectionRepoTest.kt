@@ -152,6 +152,10 @@ class SelectionRepoTest {
 
         override suspend fun getEntriesWithIds(ids: List<Int>): List<OrbitalObject> = emptyList()
 
+        override suspend fun markEntriesStale(ids: List<Int>) = Unit
+
+        override suspend fun clearStaleEntries(ids: List<Int>) = Unit
+
         override suspend fun getEntriesEpochs(): Map<Int, Double> = emptyMap()
 
         override suspend fun getEntriesNames(): Map<Int, String> = emptyMap()

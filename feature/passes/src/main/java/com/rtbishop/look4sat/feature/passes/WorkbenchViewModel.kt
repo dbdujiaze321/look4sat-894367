@@ -22,6 +22,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rtbishop.look4sat.core.domain.analysis.PassStatistics
+import com.rtbishop.look4sat.core.domain.analysis.StalenessCalibration
 import com.rtbishop.look4sat.core.domain.model.DatabaseState
 import com.rtbishop.look4sat.core.domain.predict.OrbitalPass
 import com.rtbishop.look4sat.core.domain.repository.IDatabaseRepo
@@ -52,7 +53,11 @@ data class WorkbenchState(
     val highPrecisionDaysLeft: Double? = null,
     val isRefreshing: Boolean = false,
     val message: String? = null,
-    val statistics: PassStatistics? = null
+    val statistics: PassStatistics? = null,
+    /** Expected pass-time error for the data currently held, from the app's own measurements. */
+    val errorSeconds: Double? = null,
+    /** True when that error is outside the ten second budget the app promises. */
+    val exceedsErrorBudget: Boolean = false
 )
 
 class WorkbenchViewModel(
@@ -145,6 +150,9 @@ class WorkbenchViewModel(
             null
         }
         val untilStale = ageDays?.let { (STALE_AFTER_DAYS - it).coerceAtLeast(0) }
+        val ageDaysPrecise = (now - updateTimestamp).toDouble() / DAY_MS
+        val calibration = StalenessCalibration.decode(settingsRepo.otherSettings.value.stalenessJson)
+        val errorSeconds = if (hasData) calibration.predictedSeconds(ageDaysPrecise) else null
 
         _uiState.update {
             it.copy(
@@ -154,7 +162,10 @@ class WorkbenchViewModel(
                 dataAgeDays = ageDays,
                 daysUntilStale = untilStale,
                 highPrecisionDaysLeft = highPrecisionLeft,
-                statistics = statistics
+                statistics = statistics,
+                errorSeconds = errorSeconds,
+                exceedsErrorBudget = errorSeconds != null &&
+                    errorSeconds > StalenessCalibration.BUDGET_SECONDS
             )
         }
     }

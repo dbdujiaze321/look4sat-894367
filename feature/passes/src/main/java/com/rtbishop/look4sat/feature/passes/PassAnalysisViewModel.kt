@@ -27,6 +27,7 @@ import com.rtbishop.look4sat.core.domain.analysis.OrbitElements
 import com.rtbishop.look4sat.core.domain.analysis.PassMetrics
 import com.rtbishop.look4sat.core.domain.analysis.PassSampler
 import com.rtbishop.look4sat.core.domain.analysis.PassStatistics
+import com.rtbishop.look4sat.core.domain.analysis.StalenessCalibration
 import com.rtbishop.look4sat.core.domain.model.SatRadio
 import com.rtbishop.look4sat.core.domain.predict.OrbitalPass
 import com.rtbishop.look4sat.core.domain.repository.IMainContainer
@@ -54,7 +55,9 @@ data class PassAnalysisState(
     val referenceHz: Long? = null,
     val statistics: PassStatistics? = null,
     /** Lead time used for the calendar reminder; mirrors the pass alarm setting. */
-    val reminderMinutes: Int = 10
+    val reminderMinutes: Int = 10,
+    /** Self-trained model of how old elements cost accuracy; empty until it has measurements. */
+    val staleness: StalenessCalibration = StalenessCalibration.EMPTY
 ) {
     val selectedRadio: SatRadio? get() = radios.firstOrNull { it.uuid == selectedRadioUuid }
 }
@@ -77,7 +80,10 @@ class PassAnalysisViewModel(
     private val _uiState = MutableStateFlow(
         PassAnalysisState(
             isUtc = settingsRepo.otherSettings.value.stateOfUtc,
-            reminderMinutes = settingsRepo.otherSettings.value.passAlarmLeadMinutes
+            reminderMinutes = settingsRepo.otherSettings.value.passAlarmLeadMinutes,
+            staleness = StalenessCalibration.decode(
+                settingsRepo.otherSettings.value.stalenessJson
+            )
         )
     )
     val uiState: StateFlow<PassAnalysisState> = _uiState.asStateFlow()

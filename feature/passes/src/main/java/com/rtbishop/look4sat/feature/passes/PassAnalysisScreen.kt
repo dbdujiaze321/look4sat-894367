@@ -247,7 +247,15 @@ private fun AnalysisContent(
                 )
             }
         }
-        state.elements?.let { item { OrbitCard(elements = it) } }
+        state.elements?.let { elements ->
+            item {
+                OrbitCard(
+                    elements = elements,
+                    errorSeconds = state.staleness.predictedSeconds(elements.elementAgeDays),
+                    sampleCount = state.staleness.sampleCount
+                )
+            }
+        }
         if (state.samples.size >= 2 && metrics != null) {
             item {
                 SectionCard(title = stringResource(R.string.analysis_elevation)) {
@@ -337,7 +345,7 @@ private fun GeometryCard(metrics: PassMetrics, timeLabel: (Long) -> String, isDe
 }
 
 @Composable
-private fun OrbitCard(elements: OrbitElements) {
+private fun OrbitCard(elements: OrbitElements, errorSeconds: Double, sampleCount: Int) {
     SectionCard(title = stringResource(R.string.analysis_orbit)) {
         MetricPair(
             stringResource(R.string.analysis_period) to "${formatKm(elements.periodMinutes)} min",
@@ -358,6 +366,16 @@ private fun OrbitCard(elements: OrbitElements) {
         MetricPair(
             stringResource(R.string.analysis_age) to String.format(Locale.ROOT, "%.2f d", elements.elementAgeDays),
             stringResource(R.string.analysis_freshness) to stringResource(elements.freshness.labelRes())
+        )
+        // What that age costs, from the app's own measurements of past updates. The sample count is
+        // shown because a model fitted on three points and one fitted on three hundred are not the
+        // same claim, and hiding that would be exactly the false precision this screen avoids.
+        MetricPair(
+            stringResource(R.string.analysis_error_budget) to stringResource(
+                R.string.analysis_error_value,
+                formatErrorSeconds(errorSeconds)
+            ),
+            stringResource(R.string.analysis_error_samples) to sampleCount.toString()
         )
     }
 }
@@ -615,6 +633,13 @@ private fun formatDuration(seconds: Long): String {
 private fun formatDegrees(value: Double): String = String.format(Locale.ROOT, "%.1f", value)
 
 private fun formatKm(value: Double): String = String.format(Locale.ROOT, "%.0f", value)
+
+/** Sub-second values are noise; a stale set's error is worth showing to the second. */
+private fun formatErrorSeconds(seconds: Double): String = when {
+    seconds < 0.5 -> "<0.5"
+    seconds < 10.0 -> String.format(Locale.ROOT, "%.1f", seconds)
+    else -> String.format(Locale.ROOT, "%.0f", seconds)
+}
 
 private fun formatRate(value: Double): String = String.format(Locale.ROOT, "%.2f", value)
 

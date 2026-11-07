@@ -105,6 +105,7 @@ class SettingsRepo(
     private val keyPassAlarmLeadMinutes = "passAlarmLeadMinutes"
     private val keyThemeJson = "themeJson"
     private val keyStationsJson = "stationsJson"
+    private val keyStalenessJson = "stalenessJson"
     private val keySatellitesUrls = "satellitesUrls"
     private val keyTransceiversUrls = "transceiversUrls"
     private val keySatellitesUrlsEnabled = "satellitesUrlsEnabled"
@@ -384,6 +385,7 @@ class SettingsRepo(
                 putInt(keyPassAlarmLeadMinutes, new.passAlarmLeadMinutes)
                 putString(keyThemeJson, new.themeJson)
                 putString(keyStationsJson, new.stationsJson)
+                putString(keyStalenessJson, new.stalenessJson)
             }
             new
         }
@@ -411,7 +413,8 @@ class SettingsRepo(
         passAlarmEnabled = preferences.getBoolean(keyPassAlarmEnabled, false),
         passAlarmLeadMinutes = preferences.getInt(keyPassAlarmLeadMinutes, 10).coerceIn(0, 120),
         themeJson = preferences.getString(keyThemeJson, null).orEmpty(),
-        stationsJson = preferences.getString(keyStationsJson, null).orEmpty()
+        stationsJson = preferences.getString(keyStationsJson, null).orEmpty(),
+        stalenessJson = preferences.getString(keyStalenessJson, null).orEmpty()
     )
     //endregion
 

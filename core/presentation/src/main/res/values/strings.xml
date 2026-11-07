@@ -465,4 +465,10 @@
     <string name="analysis_decaying">decaying</string>
 
     <string name="analysis_always_visible">always</string>
+
+    <string name="workbench_error_budget">Timing accuracy ±%1$s s</string>
+    <string name="analysis_error_budget">Timing accuracy</string>
+    <string name="analysis_error_value">±%1$s s</string>
+
+    <string name="analysis_error_samples">samples</string>
 </resources>
