@@ -45,8 +45,16 @@ jobs:
       - name: Test
         run: ./gradlew :core:domain:test :core:data:test
 
+      # R8 in full mode with -repackageclasses needs more headroom than the 6g the
+      # project sets in gradle.properties: on the hosted runner it died with
+      # "java.lang.OutOfMemoryError: Java heap space" inside minifyReleaseWithR8.
+      # The standard runner has 16 GB, so give the daemon room and keep the worker
+      # count low enough that the Kotlin and R8 workers do not compete.
       - name: Assemble release
-        run: ./gradlew :app:assembleRelease
+        run: >-
+          ./gradlew :app:assembleRelease
+          -Dorg.gradle.jvmargs="-Xmx10g -XX:MaxMetaspaceSize=2g -Dfile.encoding=UTF-8"
+          -Dorg.gradle.workers.max=2
 
       - name: Sign APK
         id: sign
