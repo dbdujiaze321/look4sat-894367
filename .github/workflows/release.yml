@@ -48,6 +48,7 @@ jobs:
         run: ./gradlew :app:assembleRelease
 
       - name: Sign APK
+        id: sign
         env:
           KEY_STORE: ${{ secrets.KEY_STORE }}
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -58,8 +59,8 @@ jobs:
           APK=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
           OUT="look4sat-${GITHUB_REF_NAME#v}-release.apk"
           if [ -z "${KEY_STORE:-}" ]; then
-            echo "::warning::No signing secrets, publishing the unsigned APK"
-            cp "$APK" "$OUT"
+            echo "::warning::No signing secrets: the build is left unpublished rather than published unsigned"
+            echo "signed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "$KEY_STORE" | base64 -d > keystore.jks
@@ -76,17 +77,21 @@ jobs:
             "$APK"
           rm -f keystore.jks
           apksigner verify --print-certs "$OUT"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
 
       - name: Source archive
+        if: steps.sign.outputs.signed == 'true'
         run: |
           PREFIX="look4sat-${GITHUB_REF_NAME#v}/"
           git archive --format=zip -9 --prefix="$PREFIX" HEAD \
             -o "look4sat-${GITHUB_REF_NAME#v}-source.zip"
 
       - name: Checksums
+        if: steps.sign.outputs.signed == 'true'
         run: sha256sum *.apk *.idsig *.zip > SHA256SUMS.txt || sha256sum *.apk *.zip > SHA256SUMS.txt
 
       - name: Publish
+        if: steps.sign.outputs.signed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
