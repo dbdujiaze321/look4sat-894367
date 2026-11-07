@@ -95,7 +95,7 @@ class StationBookTest {
 
     @Test
     fun `validation rejects impossible values`() {
-        assertNull(StationBook.validate("Home", 26.07, 119.30, 20.0))
+        assertNull(StationBook.validate("Home", 35.68, 139.69, 20.0))
         assertEquals(StationError.NAME_BLANK, StationBook.validate("  ", 0.0, 0.0, 0.0))
         assertEquals(StationError.NAME_TOO_LONG, StationBook.validate("x".repeat(25), 0.0, 0.0, 0.0))
         assertEquals(StationError.LATITUDE_RANGE, StationBook.validate("Home", 91.0, 0.0, 0.0))

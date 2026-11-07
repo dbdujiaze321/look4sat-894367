@@ -43,7 +43,7 @@ class PassSamplerTest {
         bstar = 0.00010270
     )
     private val satellite = NearEarthObject(data)
-    private val station = GeoPos(26.07, 119.30, 20.0)
+    private val station = GeoPos(51.4778, -0.0015, 20.0)
     private val epochMillis = 315_446_400_000L + (data.epochDaynum * 86_400_000.0).toLong()
 
     /** First minute after the epoch at which the satellite is comfortably above the horizon. */
