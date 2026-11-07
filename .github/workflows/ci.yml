@@ -26,12 +26,17 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
+      # android-actions/setup-android@v3 now fails on the hosted image: it still asks
+      # sdkmanager for the legacy "tools" package, which Google removed, and the step
+      # dies with "Failed to find package 'tools'". The runner already ships an SDK and
+      # accepted licences, so drive its sdkmanager directly instead.
       - name: Install platform and build tools
         run: |
-          sdkmanager --install "platforms;android-37" "build-tools;37.0.0"
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          SM=$(ls "$SDK"/cmdline-tools/*/bin/sdkmanager | head -1)
+          echo "using $SM"
+          yes | "$SM" --licenses > /dev/null || true
+          "$SM" --install "platforms;android-37" "build-tools;37.0.0"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -64,8 +69,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: android-actions/setup-android@v3
-      - run: sdkmanager --install "platforms;android-37" "build-tools;37.0.0"
+      - name: Install platform and build tools
+        run: |
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          SM=$(ls "$SDK"/cmdline-tools/*/bin/sdkmanager | head -1)
+          yes | "$SM" --licenses > /dev/null || true
+          "$SM" --install "platforms;android-37" "build-tools;37.0.0"
       - uses: gradle/actions/setup-gradle@v4
       - name: Assemble release (unsigned on a fork)
         run: ./gradlew :app:assembleRelease

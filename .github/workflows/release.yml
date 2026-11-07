@@ -31,12 +31,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install platform and build tools
         run: |
-          sdkmanager --install "platforms;android-37" "build-tools;37.0.0"
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          SM=$(ls "$SDK"/cmdline-tools/*/bin/sdkmanager | head -1)
+          echo "using $SM"
+          yes | "$SM" --licenses > /dev/null || true
+          "$SM" --install "platforms;android-37" "build-tools;37.0.0"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
