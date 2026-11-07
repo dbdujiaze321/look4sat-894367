@@ -36,6 +36,8 @@ and are used here only to refer to those projects and services.
 
 **Look4Sat 4.4.9, modified; maintained by BA7OPF <ba7opf@users.noreply.github.com>.**
 
+    Modified version of record: https://github.com/dbdujiaze321/loos4sat-894367
+
 The base of this tree is upstream tag 4.4.9 (commit history starts at
 `chore: import Look4Sat 4.4.9 upstream and port stage 1-3 groundwork`).
 Everything below was added or changed on top of that tag.

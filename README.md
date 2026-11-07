@@ -1,16 +1,21 @@
 # Look4Sat: Satellite tracker
 
 > **This repository is a modified fork of Look4Sat 4.4.9.**
+> This fork: <https://github.com/dbdujiaze321/loos4sat-894367>
 > Upstream: <https://github.com/rt-bishop/Look4Sat> — Copyright (C) 2019-2026 Arty Bishop
 > and contributors, licensed under GPL-3.0-or-later.
-> The release links below point at the **upstream** releases, not at builds of this
-> fork. Every change made here is listed in [NOTICE](NOTICE), together with the
+> The "upstream releases" links below point at the original project, not at builds of
+> this fork. Builds of this fork are attached to this repository's own
+> [releases page](https://github.com/dbdujiaze321/loos4sat-894367/releases).
+> Every change made here is listed in [NOTICE](NOTICE), together with the
 > attribution and the full disclaimer.
 > Additional technical notes: [docs/ACCURACY.md](docs/ACCURACY.md).
 
 Upstream releases: [Google Play](https://play.google.com/store/apps/details?id=com.rtbishop.look4sat) ·
 [F-Droid](https://f-droid.org/packages/com.rtbishop.look4sat/) ·
 [GitHub releases](https://github.com/rt-bishop/Look4Sat/releases)
+
+This fork's releases: [loos4sat-894367 releases](https://github.com/dbdujiaze321/loos4sat-894367/releases)
 
 ### Radio satellite tracker and pass predictor for Android, inspired by Gpredict
 
