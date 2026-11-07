@@ -29,13 +29,13 @@ import com.rtbishop.look4sat.core.domain.repository.IDatabaseRepo
 import com.rtbishop.look4sat.core.domain.repository.IMainContainer
 import com.rtbishop.look4sat.core.domain.repository.ISatelliteRepo
 import com.rtbishop.look4sat.core.domain.repository.ISettingsRepo
-import java.util.Locale
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 /**
  * Dashboard state. Deliberately derived from the repository's existing pass list instead of
@@ -71,6 +71,7 @@ class WorkbenchViewModel(
 
     private var passes: List<OrbitalPass> = emptyList()
     private var databaseState: DatabaseState? = null
+
     // Recomputed only when the pass list changes. The one-second ticker must not re-aggregate
     // several hundred passes just to repaint an unchanged number.
     private var statistics: PassStatistics? = null

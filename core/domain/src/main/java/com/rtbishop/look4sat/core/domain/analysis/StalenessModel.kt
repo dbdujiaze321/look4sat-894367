@@ -97,7 +97,10 @@ data class StalenessCalibration(
 
         const val MAX_SAMPLES = 512
 
-        private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+        private val json = Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
 
         val EMPTY = StalenessCalibration()
 
@@ -182,16 +185,18 @@ object StalenessModel {
                 referenceState[4] * referenceState[4] +
                 referenceState[5] * referenceState[5]
         )
-        if (speed < 1e-6) return null
         val alongKm = (dx * referenceState[3] + dy * referenceState[4] + dz * referenceState[5]) / speed
         val separationKm = sqrt(dx * dx + dy * dy + dz * dz)
-        if (!separationKm.isFinite() || separationKm > MAX_SEPARATION_KM) return null
         val seconds = abs(alongKm) / speed
-        if (!seconds.isFinite() || seconds > MAX_ERROR_SECONDS) return null
-        return ErrorSample(ageDays = ageDays, seconds = seconds)
+        // One place decides whether the numbers describe a real measurement or a broken element set.
+        val usable = speed > MIN_SPEED_KM_S &&
+            separationKm.isFinite() && separationKm <= MAX_SEPARATION_KM &&
+            seconds.isFinite() && seconds <= MAX_ERROR_SECONDS
+        return if (usable) ErrorSample(ageDays = ageDays, seconds = seconds) else null
     }
 
     private const val EPOCH_MILLIS_BASE = 315_446_400_000L
+    private const val MIN_SPEED_KM_S = 1e-6
     private const val MAX_SEPARATION_KM = 100_000.0
     private const val MAX_ERROR_SECONDS = 36_000.0
 }

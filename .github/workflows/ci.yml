@@ -1,0 +1,71 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install platform and build tools
+        run: |
+          sdkmanager --install "platforms;android-37" "build-tools;37.0.0"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # The orbital kernel, the parsers and the drift model are pure JVM code, so the
+      # whole test suite runs here without a device or an emulator.
+      - name: Unit tests
+        run: ./gradlew :core:domain:test :core:data:test
+
+      - name: Debug build
+        run: ./gradlew :app:assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: look4sat-debug
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+  # A release build needs the signing key. Without the secrets below the build still
+  # succeeds and produces an unsigned APK, which is what a pull request from a fork
+  # will do; only the repository owner has the secrets.
+  release-dry-run:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager --install "platforms;android-37" "build-tools;37.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Assemble release (unsigned on a fork)
+        run: ./gradlew :app:assembleRelease

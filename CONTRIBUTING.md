@@ -23,7 +23,15 @@ rest.
 ./gradlew :app:assembleRelease
 ```
 
-`./gradlew detekt` runs the static analysis configuration in `config/`.
+`./gradlew detektApply` formats the tree with the project's own ktlint rules; the
+configuration lives in `config/detekt/`.
+
+`detektCheck` is not part of CI, because the inherited code does not pass it:
+about a thousand findings remain in files that came from upstream and from the FT4
+branch, almost all of them indentation and import order. Reformatting them would
+rewrite upstream files wholesale and turn every future upstream merge into a
+conflict, so the check is left to whoever wants to pay that price. Run
+`detektApply` on the files you touch.
 
 ## Code layout
 

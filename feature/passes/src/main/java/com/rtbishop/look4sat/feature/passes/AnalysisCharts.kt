@@ -76,25 +76,20 @@ internal fun ElevationChart(
     val start = samples.first().time
     val end = samples.last().time
     val peak = samples.maxOf { it.elevationDeg }
-    val top = (ceil(peak / 15.0) * 15.0).coerceAtLeast(15.0)
+    val top = axisTop(peak)
 
     Column(modifier = modifier) {
         Row(modifier = Modifier.height(chartHeight)) {
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(38.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.End
-            ) {
-                AxisLabel("${top.roundToInt()}°")
-                AxisLabel("${(top / 2).roundToInt()}°")
-                AxisLabel("0°")
-            }
+            VerticalAxis(
+                labels = Triple("${top.roundToInt()}°", "${(top / 2).roundToInt()}°", "0°"),
+                width = 38.dp
+            )
             Spacer(modifier = Modifier.width(6.dp))
-            Canvas(modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
                 drawGrid(gridColor)
                 val xOf = { time: Long -> ((time - start).toFloat() / (end - start)) * size.width }
                 val yOf = { value: Double -> size.height - (value / top).toFloat() * size.height }
@@ -163,21 +158,16 @@ internal fun DopplerChart(
 
     Column(modifier = modifier) {
         Row(modifier = Modifier.height(chartHeight)) {
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(52.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.End
-            ) {
-                AxisLabel("+${peak} Hz")
-                AxisLabel("0")
-                AxisLabel("-${peak} Hz")
-            }
+            VerticalAxis(
+                labels = Triple("+$peak Hz", "0", "-$peak Hz"),
+                width = 52.dp
+            )
             Spacer(modifier = Modifier.width(6.dp))
-            Canvas(modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
                 drawGrid(gridColor)
                 val xOf = { time: Long -> ((time - start).toFloat() / (end - start)) * size.width }
                 val yOf = { delta: Long ->
@@ -312,6 +302,29 @@ internal fun SkyPlot(
         Text("E", color = labelColor, fontSize = 11.sp, modifier = Modifier.align(Alignment.CenterEnd))
         Text("S", color = labelColor, fontSize = 11.sp, modifier = Modifier.align(Alignment.BottomCenter))
         Text("W", color = labelColor, fontSize = 11.sp, modifier = Modifier.align(Alignment.CenterStart))
+    }
+}
+
+/**
+ * The three labels down the left edge of a chart: top, middle, bottom.
+ *
+ * Both charts had their own copy of this column, which is why they disagreed about the width.
+ */
+/** Round the top of the axis up to a whole number of 15 degree steps. */
+private fun axisTop(peak: Double): Double = (ceil(peak / 15.0) * 15.0).coerceAtLeast(15.0)
+
+@Composable
+private fun VerticalAxis(labels: Triple<String, String, String>, width: Dp) {
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .width(width),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.End
+    ) {
+        AxisLabel(labels.first)
+        AxisLabel(labels.second)
+        AxisLabel(labels.third)
     }
 }
 

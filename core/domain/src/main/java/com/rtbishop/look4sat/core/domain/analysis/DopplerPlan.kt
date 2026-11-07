@@ -63,12 +63,15 @@ object DopplerPlan {
         uplinkHigh: Long?,
         observedDownlinkHz: Long
     ): Long? {
-        if (downlinkLow == null || downlinkHigh == null || uplinkLow == null || uplinkHigh == null) return null
-        val downWidth = (downlinkHigh - downlinkLow).toDouble()
-        val upWidth = (uplinkHigh - uplinkLow).toDouble()
+        val downLow = downlinkLow ?: return null
+        val downHigh = downlinkHigh ?: return null
+        val upLow = uplinkLow ?: return null
+        val upHigh = uplinkHigh ?: return null
+        val downWidth = (downHigh - downLow).toDouble()
+        val upWidth = (upHigh - upLow).toDouble()
         if (downWidth <= 0.0 || upWidth <= 0.0) return null
         val scale = upWidth / downWidth
-        return (uplinkHigh - (observedDownlinkHz - downlinkLow) * scale).roundToLong()
+        return (upHigh - (observedDownlinkHz - downLow) * scale).roundToLong()
     }
 
     /** Nominal (un-Doppler-shifted) uplink for a given nominal downlink on this transponder. */
