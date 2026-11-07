@@ -37,7 +37,7 @@ jobs:
           SM=$(ls "$SDK"/cmdline-tools/*/bin/sdkmanager | head -1)
           echo "using $SM"
           yes | "$SM" --licenses > /dev/null || true
-          "$SM" --install "platforms;android-37" "build-tools;37.0.0"
+          "$SM" --install "platforms;android-37.0" "build-tools;37.0.0"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
