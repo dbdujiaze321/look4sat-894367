@@ -40,7 +40,7 @@ jobs:
           "$SM" --install "platforms;android-37.0" "build-tools;37.0.0"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Test
         run: ./gradlew :core:domain:test :core:data:test
