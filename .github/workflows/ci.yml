@@ -39,7 +39,7 @@ jobs:
           "$SM" --install "platforms;android-37.0" "build-tools;37.0.0"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
 
       # The orbital kernel, the parsers and the drift model are pure JVM code, so the
       # whole test suite runs here without a device or an emulator.
@@ -83,7 +83,7 @@ jobs:
           SM=$(ls "$SDK"/cmdline-tools/*/bin/sdkmanager | head -1)
           yes | "$SM" --licenses > /dev/null || true
           "$SM" --install "platforms;android-37.0" "build-tools;37.0.0"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Assemble release (unsigned on a fork)
         run: >-
           ./gradlew :app:assembleRelease
