@@ -1,10 +1,14 @@
 version: 2
+
+# The project has no Ruby component; the inherited "bundler" entry asked
+# Dependabot to watch a Gemfile that does not exist, and scheduled it never.
+# Gradle is deliberately not auto-bumped: the version catalog pins AGP, Kotlin
+# and the SDK levels to each other, and a bot PR that moves one of them breaks
+# the build. Dependabot alerts are still on, so security advisories do surface.
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-  - package-ecosystem: "bundler"
-    directory: "/"
-    schedule:
-      interval: "never"
+    commit-message:
+      prefix: "ci"
