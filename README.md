@@ -1,5 +1,8 @@
 # Look4Sat: Satellite tracker
 
+[![ci](https://github.com/dbdujiaze321/look4sat-894367/actions/workflows/ci.yml/badge.svg)](https://github.com/dbdujiaze321/look4sat-894367/actions/workflows/ci.yml)
+[![licence: GPL-3.0-or-later](https://img.shields.io/badge/licence-GPL--3.0--or--later-blue)](LICENSE)
+
 > **This repository is a modified fork of Look4Sat 4.4.9.**
 > This fork: <https://github.com/dbdujiaze321/look4sat-894367>
 > Upstream: <https://github.com/rt-bishop/Look4Sat> — Copyright (C) 2019-2026 Arty Bishop
