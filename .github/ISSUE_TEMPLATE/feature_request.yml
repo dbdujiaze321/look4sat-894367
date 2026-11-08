@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest a change to this fork
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: |
+        What are you trying to do that the app makes difficult? Describe the
+        situation rather than the fix you have in mind — it often points at a
+        cheaper solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Including "I already do this by exporting to CSV and …" is useful.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: upstream
+    attributes:
+      label: Does this belong upstream?
+      description: |
+        This is a fork. A change that is useful to every Look4Sat user is better
+        proposed to the original project, where it benefits more people and does
+        not diverge the two trees further.
+      options:
+        - Probably useful to everyone — worth sending upstream
+        - Specific to this fork
+        - Not sure
+    validations:
+      required: true

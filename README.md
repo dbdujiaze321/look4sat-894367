@@ -86,6 +86,10 @@ Short version; the full list is in [NOTICE](NOTICE).
 Requirements: JDK 21, Android SDK with platform 37 and build-tools 37.x.
 Gradle is provided by the wrapper.
 
+Before shipping a release, run the three device checks in
+[docs/SMOKE-TEST.md](docs/SMOKE-TEST.md) — a minified build can pass every test
+and still crash on a phone.
+
 ```bash
 ./gradlew :app:assembleDebug          # debug build, installable
 ./gradlew :core:domain:test :core:data:test   # 243 unit tests

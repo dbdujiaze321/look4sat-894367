@@ -1,0 +1,68 @@
+name: Bug report
+description: Something in this fork does not behave as described
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check first whether the same problem happens in the upstream app
+        from Google Play or F-Droid. If it does, it is not a fork bug and the
+        report belongs upstream — but it is still useful to say so here.
+
+  - type: input
+    id: version
+    attributes:
+      label: Build
+      description: |
+        Where the app came from. If it is the APK from this repository's
+        releases, give the file name (`look4sat-4.4.9-fork.1-release.apk`) and
+        the SHA-256 from `SHA256SUMS.txt` if you still have it.
+      placeholder: look4sat-4.4.9-fork.1-release.apk
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: Pixel 6, Android 15 (API 35)
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the workbench
+        2. Tap the chart icon on a pass row
+        3. Rotate the device
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: Screenshots or a screen recording help a lot.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Optional. `adb logcat -d > log.txt` after reproducing, or the crash
+        report Android offers when the app stops.
+      render: text
+    validations:
+      required: false
